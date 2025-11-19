@@ -1,6 +1,30 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+class Categoria(models.Model):
+    nombre = models.CharField(max_length=100, unique=True, verbose_name="Nombre de la Categoría")
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+
+    def __str__(self):
+        return self.nombre
+
+    class Meta:
+        verbose_name = "Categoría"
+        verbose_name_plural = "Categorías"
+
+class Ubicacion(models.Model):
+    nombre = models.CharField(max_length=100, unique=True, verbose_name="Nombre de la Ubicación")
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+
+    def __str__(self):
+        return self.nombre
+
+    class Meta:
+        verbose_name = "Ubicación"
+        verbose_name_plural = "Ubicaciones"
+
 class Activo(models.Model):
     MARCA_CHOICES = [
         ('SUNMI V1', 'SUNMI V1'),
@@ -26,6 +50,8 @@ class Activo(models.Model):
     responsable = models.CharField(max_length=100, blank=True, null=True, verbose_name="RESPONSABLE")
     identificacion = models.CharField(max_length=100, blank=True, null=True, verbose_name="IDENTIFICACIÓN")
     zona = models.CharField(max_length=100, default="Valledupar", verbose_name="ZONA")
+    ubicacion = models.ForeignKey(Ubicacion, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Ubicación")
+    categoria = models.ForeignKey(Categoria, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Categoría")
     observacion = models.TextField(default="VERIFICADO", verbose_name="OBSERVACIÓN")
     punto_venta = models.CharField(max_length=100, blank=True, null=True, verbose_name="PUNTO DE VENTA")
     codigo_centro_costo = models.CharField(max_length=100, blank=True, null=True, verbose_name="CÓDIGO CENTRO DE COSTO")
@@ -40,6 +66,33 @@ class Activo(models.Model):
     class Meta:
         verbose_name = "Activo"
         verbose_name_plural = "Activos"
+
+
+class Movimiento(models.Model):
+    TIPO_CHOICES = [
+        ('ingreso', 'Ingreso'),
+        ('salida', 'Salida'),
+        ('transferencia', 'Transferencia'),
+        ('cambio_estado', 'Cambio de Estado'),
+    ]
+
+    activo = models.ForeignKey(Activo, on_delete=models.CASCADE, verbose_name="Activo")
+    tipo = models.CharField(max_length=20, choices=TIPO_CHOICES, verbose_name="Tipo de Movimiento")
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Usuario")
+    ubicacion_origen = models.ForeignKey(Ubicacion, on_delete=models.SET_NULL, null=True, blank=True, related_name='movimientos_origen', verbose_name="Ubicación Origen")
+    ubicacion_destino = models.ForeignKey(Ubicacion, on_delete=models.SET_NULL, null=True, blank=True, related_name='movimientos_destino', verbose_name="Ubicación Destino")
+    estado_anterior = models.CharField(max_length=100, blank=True, null=True, verbose_name="Estado Anterior")
+    estado_nuevo = models.CharField(max_length=100, blank=True, null=True, verbose_name="Estado Nuevo")
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
+    fecha = models.DateTimeField(auto_now_add=True, verbose_name="Fecha")
+
+    def __str__(self):
+        return f"{self.tipo} - {self.activo} - {self.fecha}"
+
+    class Meta:
+        verbose_name = "Movimiento"
+        verbose_name_plural = "Movimientos"
+        ordering = ['-fecha']
 
 
 class Historial(models.Model):

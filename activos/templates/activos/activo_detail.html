@@ -28,5 +28,7 @@
         <tr><th>FECHA DE MODIFICACIÓN</th><td>{{ object.fecha_modificacion }}</td></tr>
     </table>
     <a href="{% url 'activos:home' %}" class="btn btn-primary">Volver al listado</a>
+{% if user.groups.all.0.name == 'Admin' or user.groups.all.0.name == 'Logística' %}
     <a href="{% url 'activos:editar_activo' object.pk %}" class="btn btn-warning">Editar</a>
+{% endif %}
 {% endblock %}

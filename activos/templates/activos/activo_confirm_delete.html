@@ -1,11 +1,41 @@
 {% extends 'base.html' %}
 
+{% block title %}Confirmar Eliminación{% endblock %}
+
 {% block content %}
-    <h2>Eliminar Activo</h2>
-    <p>¿Estás seguro de que quieres eliminar el activo "{{ object }}"?</p>
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-danger">Eliminar</button>
-        <a href="{% url 'activos:home' %}" class="btn btn-secondary">Cancelar</a>
-    </form>
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <p class="lead">¿Está seguro de que desea eliminar el siguiente activo?</p>
+                    <div class="alert alert-warning">
+                        <strong>Activo #{{ object.item }}</strong><br>
+                        Artículo: {{ object.articulo }}<br>
+                        Marca: {{ object.marca|default:"-" }}<br>
+                        Estado: {{ object.estado }}<br>
+                        Zona: {{ object.zona }}
+                    </div>
+                    <p class="text-muted">Esta acción no se puede deshacer.</p>
+                </div>
+                <div class="card-footer d-flex justify-content-end">
+                    <a href="{% url 'activos:detalle_activo' object.pk %}" class="btn btn-secondary me-2">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                    <form method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}

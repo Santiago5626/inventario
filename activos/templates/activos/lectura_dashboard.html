@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard de Lectura{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mt-4">Dashboard de Lectura</h1>
+
+    <!-- Inventory Summary -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-boxes mr-1"></i>
+                    Resumen del Inventario
+                </div>
+                <div class="card-body">
+                    <p>Aquí se mostrará un resumen del inventario.</p>
+                    <ul>
+                        <li>Total de Activos: {{ total_activos }}</li>
+                        <li>Activos Asignados: {{ asignados }}</li>
+                        <li>Activos en Bodega: {{ en_bodega }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Asset List -->
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-list-ul mr-1"></i>
+                    Activos
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'activo-list' %}" class="btn btn-primary">Ver Listado de Activos</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

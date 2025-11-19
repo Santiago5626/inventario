@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Administrativo{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mt-4">Dashboard Administrativo</h1>
+
+    <!-- Asset Summary -->
+    <div class="row">
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-primary text-white mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Total Activos</h5>
+                    <p class="card-text">{{ total_activos }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-success text-white mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Asignados</h5>
+                    <p class="card-text">{{ asignados }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-warning text-dark mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">En Bodega</h5>
+                    <p class="card-text">{{ en_bodega }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6">
+            <div class="card bg-danger text-white mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Dados de Baja</h5>
+                    <p class="card-text">{{ dados_baja }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Management Sections -->
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-box-open mr-1"></i>
+                    Gestión de Activos
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'activo-list' %}" class="btn btn-primary">Listar Activos</a>
+                    <a href="{% url 'activo-create' %}" class="btn btn-success">Crear Activo</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-tags mr-1"></i>
+                    Artículos y Tipos
+                </div>
+                <div class="card-body">
+                    <a href="#" class="btn btn-primary">Gestionar Artículos</a>
+                    <a href="#" class="btn btn-primary">Gestionar Tipos</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-map-marker-alt mr-1"></i>
+                    Zonas y Ubicaciones
+                </div>
+                <div class="card-body">
+                    <a href="#" class="btn btn-primary">Gestionar Zonas</a>
+                    <a href="{% url 'ubicacion-create' %}" class="btn btn-primary">Crear Ubicación</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-users mr-1"></i>
+                    Gestión de Usuarios
+                </div>
+                <div class="card-body">
+                    <a href="#" class="btn btn-primary">Listar Usuarios</a>
+                    <a href="#" class="btn btn-success">Crear Usuario</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-truck-loading mr-1"></i>
+                    Movimientos
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'registrar-movimiento' %}" class="btn btn-primary">Registrar Movimiento</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-file-excel mr-1"></i>
+                    Reportes
+                </div>
+                <div class="card-body">
+                    <a href="#" class="btn btn-primary">Inventario por Sede</a>
+                    <a href="#" class="btn btn-secondary">Exportar a Excel</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
