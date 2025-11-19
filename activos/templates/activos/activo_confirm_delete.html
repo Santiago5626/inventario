@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h2>Eliminar Activo</h2>
+    <p>¿Estás seguro de que quieres eliminar el activo "{{ object }}"?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a href="{% url 'activos:home' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+{% endblock %}
