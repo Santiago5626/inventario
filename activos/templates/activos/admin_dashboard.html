@@ -3,124 +3,120 @@
 {% block title %}Dashboard Administrativo{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <h1 class="mt-4">Dashboard Administrativo</h1>
 
-    <!-- Asset Summary -->
-    <div class="row">
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-primary text-white mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Total Activos</h5>
-                    <p class="card-text">{{ total_activos }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-success text-white mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Asignados</h5>
-                    <p class="card-text">{{ asignados }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-warning text-dark mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">En Bodega</h5>
-                    <p class="card-text">{{ en_bodega }}</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6">
-            <div class="card bg-danger text-white mb-4">
-                <div class="card-body">
-                    <h5 class="card-title">Dados de Baja</h5>
-                    <p class="card-text">{{ dados_baja }}</p>
-                </div>
+<h1 class="mb-4 fw-bold">Dashboard Administrativo</h1>
+
+<!-- Resumen de activos -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h6 class="fw-light">Total Activos</h6>
+                <h2 class="fw-bold">{{ total_activos }}</h2>
             </div>
         </div>
     </div>
 
-    <!-- Management Sections -->
-    <div class="row">
-        <div class="col-lg-6">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <i class="fas fa-box-open mr-1"></i>
-                    Gestión de Activos
-                </div>
-                <div class="card-body">
-                    <a href="{% url 'activos:home' %}" class="btn btn-primary">Listar Activos</a>
-                    <a href="{% url 'activos:activo-create' %}" class="btn btn-success">Crear Activo</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <i class="fas fa-tags mr-1"></i>
-                    Artículos y Tipos
-                </div>
-                <div class="card-body">
-                    <a href="#" class="btn btn-primary">Gestionar Artículos</a>
-                    <a href="#" class="btn btn-primary">Gestionar Tipos</a>
-                </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-secondary text-white">
+            <div class="card-body">
+                <h6 class="fw-light">Asignados</h6>
+                <h2 class="fw-bold">{{ asignados }}</h2>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-lg-6">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <i class="fas fa-map-marker-alt mr-1"></i>
-                    Zonas y Ubicaciones
-                </div>
-                <div class="card-body">
-                    <a href="#" class="btn btn-primary">Gestionar Zonas</a>
-                    <a href="{% url 'activos:ubicacion-create' %}" class="btn btn-primary">Crear Ubicación</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <i class="fas fa-users mr-1"></i>
-                    Gestión de Usuarios
-                </div>
-                <div class="card-body">
-                    <a href="{% url 'usuarios:user_list' %}" class="btn btn-primary">Listar Usuarios</a>
-                    <a href="{% url 'usuarios:user_create' %}" class="btn btn-success">Crear Usuario</a>
-                </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-success text-dark">
+            <div class="card-body">
+                <h6 class="fw-light">En Bodega</h6>
+                <h2 class="fw-bold">{{ en_bodega }}</h2>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-lg-6">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <i class="fas fa-truck-loading mr-1"></i>
-                    Movimientos
-                </div>
-                <div class="card-body">
-                    <a href="{% url 'activos:movimientos' %}" class="btn btn-primary">Ver Movimientos</a>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-6">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <i class="fas fa-file-excel mr-1"></i>
-                    Reportes
-                </div>
-                <div class="card-body">
-                    <a href="{% url 'activos:reporte_por_sede' %}" class="btn btn-primary">Inventario por Sede</a>
-                    <a href="{% url 'activos:exportar_excel' %}" class="btn btn-secondary">Exportar a Excel</a>
-                </div>
+    <div class="col-xl-3 col-md-6">
+        <div class="card bg-dark text-white">
+            <div class="card-body">
+                <h6 class="fw-light">Dados de Baja</h6>
+                <h2 class="fw-bold">{{ dados_baja }}</h2>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Secciones -->
+<div class="row g-3">
+
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-box-open me-2"></i> Gestión de Activos
+            </div>
+            <div class="card-body">
+                <a href="{% url 'activos:home' %}" class="btn btn-primary me-2">Listar Activos</a>
+                <a href="{% url 'activos:activo-create' %}" class="btn btn-success">Crear Activo</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-tags me-2"></i> Artículos
+            </div>
+            <div class="card-body">
+                <a href="{% url 'activos:articulo_list' %}" class="btn btn-primary">Gestionar Artículos</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-map-marker-alt me-2"></i> Zonas
+            </div>
+            <div class="card-body">
+                <a href="{% url 'activos:zona_list' %}" class="btn btn-primary me-2">Gestionar Zonas</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-users me-2"></i> Gestión de Usuarios
+            </div>
+            <div class="card-body">
+                <a href="{% url 'usuarios:user_list' %}" class="btn btn-primary me-2">Listar Usuarios</a>
+                <a href="{% url 'usuarios:user_create' %}" class="btn btn-secondary">Crear Usuario</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-truck-loading me-2"></i> Movimientos
+            </div>
+            <div class="card-body">
+                <a href="{% url 'activos:movimientos' %}" class="btn btn-primary">Ver Movimientos</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-file-excel me-2"></i> Reportes
+            </div>
+            <div class="card-body">
+                <a href="{% url 'activos:reporte_por_sede' %}" class="btn btn-primary me-2">Inventario por Zona</a>
+                <a href="{% url 'activos:exportar_excel' %}" class="btn btn-secondary">Exportar a Excel</a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
 {% endblock %}

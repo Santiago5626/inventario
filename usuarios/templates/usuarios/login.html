@@ -1,94 +1,49 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventario PDA - Login</title>
-
+    <title>Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{% static 'css/dark_mint.css' %}" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #0d6efd, #4dabf7);
-            height: 100vh;
+            background-color: var(--bs-light);
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: "Segoe UI", sans-serif;
-        }
-
-        .login-card {
-            width: 100%;
-            max-width: 420px;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            background: #fff;
-            animation: fadeIn 0.5s ease-in-out;
-        }
-
-        .login-title {
-            font-weight: 700;
-            color: #0d6efd;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .logo-circle {
-            width: 80px;
-            height: 80px;
-            background: #fff;
-            border-radius: 50%;
-            margin: 0 auto 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
     </style>
 </head>
-
 <body>
-
-    <div class="login-card">
-        <!-- Icono arriba -->
-        <div class="logo-circle">
-            <img src="https://cdn-icons-png.flaticon.com/512/833/833593.png" width="45">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow">
+                    <div class="card-header bg-dark text-white">
+                        <h3 class="mb-0">Iniciar Sesión</h3>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Usuario</label>
+                                <input type="text" class="form-control" id="username" name="username" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Contraseña</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <button type="submit" class="btn btn-dark w-100">Iniciar Sesión</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <h3 class="login-title">Iniciar Sesión</h3>
-
-        <form method="post">
-            {% csrf_token %}
-
-            <!-- Render del formulario -->
-            <div class="mb-3">
-                {{ form.username.label_tag }}
-                {{ form.username }}
-            </div>
-
-            <div class="mb-3">
-                {{ form.password.label_tag }}
-                {{ form.password }}
-            </div>
-
-            <button type="submit" class="btn btn-primary w-100 mt-2">
-                Entrar
-            </button>
-        </form>
-
-        {% if form.errors %}
-            <div class="alert alert-danger mt-3">
-                Usuario o contraseña incorrectos.
-            </div>
-        {% endif %}
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

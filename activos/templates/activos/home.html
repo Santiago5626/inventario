@@ -7,13 +7,12 @@
     <div class="col-md-12">
         <h1>Lista de Activos</h1>
         {% if user.groups.all.0.name == 'Admin' %}
-        <a href="{% url 'activos:activo_create' %}" class="btn btn-primary mb-3">Crear Nuevo Activo</a>
-        <a href="{% url 'activos:ubicacion_list' %}" class="btn btn-secondary mb-3">Gestionar Ubicaciones</a>
+        <a href="{% url 'activos:activo-create' %}" class="btn btn-primary mb-3">Crear Nuevo Activo</a>
         <a href="{% url 'usuarios:user_list' %}" class="btn btn-info mb-3">Gestionar Usuarios</a>
         {% endif %}
         <a href="{% url 'activos:exportar_excel' %}" class="btn btn-secondary mb-3">Exportar a Excel</a>
         {% if user.groups.all.0.name == 'Admin' or user.groups.all.0.name == 'Logística' %}
-        <a href="{% url 'activos:reporte_por_sede' %}" class="btn btn-info mb-3">Reporte por Sede</a>
+        <a href="{% url 'activos:reporte_por_sede' %}" class="btn btn-info mb-3">Reporte por Zona</a>
         {% endif %}
         <table class="table table-striped">
             <thead>
@@ -22,7 +21,7 @@
                     <th>ACTIVO</th>
                     <th>MARCA</th>
                     <th>ESTADO</th>
-                    <th>UBICACIÓN</th>
+                    <th>ZONA</th>
                     <th>ACCIONES</th>
                 </tr>
             </thead>
@@ -33,17 +32,19 @@
                     <td>{{ activo.activo }}</td>
                     <td>{{ activo.marca }}</td>
                     <td>{{ activo.estado }}</td>
-                    <td>{{ activo.ubicacion.nombre|default:"Sin ubicación" }}</td>
+                    <td>{{ activo.zona }}</td>
                     <td>
                         <a href="{% url 'activos:activo_detail' activo.pk %}" class="btn btn-info btn-sm">Ver</a>
-<a href="{% url 'activos:historial_activo' activo.pk %}" class="btn btn-secondary btn-sm">Historial</a>
-{% if user.groups.all.0.name == 'Admin' or user.groups.all.0.name == 'Logística' %}
-    <a href="{% url 'activos:activo_update' activo.pk %}" class="btn btn-warning btn-sm">Editar</a>
-    <a href="{% url 'activos:registrar_movimiento' activo.pk %}" class="btn btn-success btn-sm">Movimiento</a>
-{% endif %}
-{% if user.groups.all.0.name == 'Admin' %}
-    <a href="{% url 'activos:activo_delete' activo.pk %}" class="btn btn-danger btn-sm">Eliminar</a>
-{% endif %}
+                        <a href="{% url 'activos:historial_activo' activo.pk %}"
+                            class="btn btn-secondary btn-sm">Historial</a>
+                        {% if user.groups.all.0.name == 'Admin' or user.groups.all.0.name == 'Logística' %}
+                        <a href="{% url 'activos:activo_update' activo.pk %}" class="btn btn-warning btn-sm">Editar</a>
+                        <a href="{% url 'activos:registrar_movimiento' activo.pk %}"
+                            class="btn btn-success btn-sm">Movimiento</a>
+                        {% endif %}
+                        {% if user.groups.all.0.name == 'Admin' %}
+                        <a href="{% url 'activos:activo_delete' activo.pk %}" class="btn btn-danger btn-sm">Eliminar</a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}

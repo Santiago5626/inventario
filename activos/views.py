@@ -9,7 +9,7 @@ from openpyxl import Workbook
 from django.contrib.auth.models import Group
 from django.db import models
 from django.contrib import messages
-from .models import Activo, Movimiento, Ubicacion, Categoria, Historial
+from .models import Activo, Movimiento, Historial, Articulo
 
 @login_required
 def dashboard_redirect(request):
@@ -63,11 +63,6 @@ class ActivoListView(LoginRequiredMixin, ListView):
     template_name = 'activos/home.html'
     context_object_name = 'activos'
 
-    def get(self, request, *args, **kwargs):
-        if request.user.groups.filter(name='Admin').exists():
-            return redirect('activos:admin_dashboard')
-        return super().get(request, *args, **kwargs)
-
 
 @login_required
 def exportar_excel(request):
@@ -119,99 +114,9 @@ class ActivoDeleteView(LoginRequiredMixin, DeleteView):
             return redirect('activos:home')
         return super().dispatch(request, *args, **kwargs)
 
-# Ubicacion CRUD
-class UbicacionListView(LoginRequiredMixin, ListView):
-    model = Ubicacion
-    template_name = 'activos/ubicacion_list.html'
-    context_object_name = 'ubicaciones'
 
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.groups.filter(name='Admin').exists():
-            messages.error(request, 'No tienes permisos para ver ubicaciones.')
-            return redirect('activos:home')
-        return super().dispatch(request, *args, **kwargs)
 
-class UbicacionCreateView(LoginRequiredMixin, CreateView):
-    model = Ubicacion
-    fields = ['nombre', 'descripcion']
-    template_name = 'activos/ubicacion_form.html'
-    success_url = reverse_lazy('activos:ubicacion_list')
 
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.groups.filter(name='Admin').exists():
-            messages.error(request, 'No tienes permisos para crear ubicaciones.')
-            return redirect('activos:home')
-        return super().dispatch(request, *args, **kwargs)
-
-class UbicacionUpdateView(LoginRequiredMixin, UpdateView):
-    model = Ubicacion
-    fields = ['nombre', 'descripcion']
-    template_name = 'activos/ubicacion_form.html'
-    success_url = reverse_lazy('activos:ubicacion_list')
-
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.groups.filter(name='Admin').exists():
-            messages.error(request, 'No tienes permisos para editar ubicaciones.')
-            return redirect('activos:home')
-        return super().dispatch(request, *args, **kwargs)
-
-class UbicacionDeleteView(LoginRequiredMixin, DeleteView):
-    model = Ubicacion
-    template_name = 'activos/ubicacion_confirm_delete.html'
-    success_url = reverse_lazy('activos:ubicacion_list')
-
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.groups.filter(name='Admin').exists():
-            messages.error(request, 'No tienes permisos para eliminar ubicaciones.')
-            return redirect('activos:home')
-        return super().dispatch(request, *args, **kwargs)
-
-# Categoria CRUD
-class CategoriaListView(LoginRequiredMixin, ListView):
-    model = Categoria
-    template_name = 'activos/categoria_list.html'
-    context_object_name = 'categorias'
-
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.groups.filter(name='Admin').exists():
-            messages.error(request, 'No tienes permisos para ver categorías.')
-            return redirect('activos:home')
-        return super().dispatch(request, *args, **kwargs)
-
-class CategoriaCreateView(LoginRequiredMixin, CreateView):
-    model = Categoria
-    fields = ['nombre', 'descripcion']
-    template_name = 'activos/categoria_form.html'
-    success_url = reverse_lazy('activos:categorias')
-
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.groups.filter(name='Admin').exists():
-            messages.error(request, 'No tienes permisos para crear categorías.')
-            return redirect('activos:home')
-        return super().dispatch(request, *args, **kwargs)
-
-class CategoriaUpdateView(LoginRequiredMixin, UpdateView):
-    model = Categoria
-    fields = ['nombre', 'descripcion']
-    template_name = 'activos/categoria_form.html'
-    success_url = reverse_lazy('activos:categorias')
-
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.groups.filter(name='Admin').exists():
-            messages.error(request, 'No tienes permisos para editar categorías.')
-            return redirect('activos:home')
-        return super().dispatch(request, *args, **kwargs)
-
-class CategoriaDeleteView(LoginRequiredMixin, DeleteView):
-    model = Categoria
-    template_name = 'activos/categoria_confirm_delete.html'
-    success_url = reverse_lazy('activos:categorias')
-
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.groups.filter(name='Admin').exists():
-            messages.error(request, 'No tienes permisos para eliminar categorías.')
-            return redirect('activos:home')
-        return super().dispatch(request, *args, **kwargs)
 
 # Movimiento CRUD
 class MovimientoListView(LoginRequiredMixin, ListView):
@@ -228,7 +133,7 @@ class MovimientoListView(LoginRequiredMixin, ListView):
 # Movimiento registration
 class RegistrarMovimientoView(LoginRequiredMixin, CreateView):
     model = Movimiento
-    fields = ['tipo', 'ubicacion_origen', 'ubicacion_destino', 'estado_nuevo', 'descripcion']
+    fields = ['tipo', 'zona_origen', 'zona_destino', 'estado_nuevo', 'descripcion']
     template_name = 'activos/registrar_movimiento.html'
 
     def dispatch(self, request, *args, **kwargs):
@@ -240,7 +145,8 @@ class RegistrarMovimientoView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['activo'] = get_object_or_404(Activo, pk=self.kwargs['pk'])
-        context['ubicaciones'] = Ubicacion.objects.all()
+        # Obtener zonas únicas de los activos
+        context['zonas'] = Activo.objects.values_list('zona', flat=True).distinct()
         return context
 
     def form_valid(self, form):
@@ -253,8 +159,8 @@ class RegistrarMovimientoView(LoginRequiredMixin, CreateView):
             activo.estado = form.cleaned_data['estado_nuevo']
             activo.save()
 
-        if form.cleaned_data['ubicacion_destino']:
-            activo.ubicacion = form.cleaned_data['ubicacion_destino']
+        if form.cleaned_data['zona_destino']:
+            activo.zona = form.cleaned_data['zona_destino']
             activo.save()
 
         messages.success(self.request, 'Movimiento registrado exitosamente.')
@@ -283,19 +189,18 @@ def reporte_por_sede(request):
         messages.error(request, 'No tienes permisos para ver reportes.')
         return redirect('activos:home')
 
-    sede_id = request.GET.get('sede')
-    if sede_id:
-        sede = get_object_or_404(Ubicacion, id=sede_id)
-        activos = Activo.objects.filter(ubicacion=sede)
+    zona_nombre = request.GET.get('zona')
+    if zona_nombre:
+        activos = Activo.objects.filter(zona=zona_nombre)
     else:
         activos = Activo.objects.all()
-        sede = None
+        zona_nombre = None
 
-    sedes = Ubicacion.objects.all()
-    return render(request, 'activos/reporte_por_sede.html', {
+    zonas = Activo.objects.values_list('zona', flat=True).distinct()
+    return render(request, 'activos/reporte_por_zona.html', {
         'activos': activos,
-        'sedes': sedes,
-        'sede_seleccionada': sede,
+        'zonas': zonas,
+        'zona_seleccionada': zona_nombre,
     })
 
 @login_required
@@ -332,6 +237,104 @@ class ActivoCreateView(LoginRequiredMixin, CreateView):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.groups.filter(name='Admin').exists():
             messages.error(request, 'No tienes permisos para crear activos.')
+            return redirect('activos:home')
+        return super().dispatch(request, *args, **kwargs)
+
+
+# Articulo CRUD
+class ArticuloListView(LoginRequiredMixin, ListView):
+    model = Articulo
+    template_name = 'activos/articulo_list.html'
+    context_object_name = 'articulos'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name='Admin').exists():
+            messages.error(request, 'No tienes permisos para ver artículos.')
+            return redirect('activos:home')
+        return super().dispatch(request, *args, **kwargs)
+
+class ArticuloCreateView(LoginRequiredMixin, CreateView):
+    model = Articulo
+    fields = '__all__'
+    template_name = 'activos/articulo_form.html'
+    success_url = reverse_lazy('activos:articulo_list')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name='Admin').exists():
+            messages.error(request, 'No tienes permisos para crear artículos.')
+            return redirect('activos:home')
+        return super().dispatch(request, *args, **kwargs)
+
+class ArticuloUpdateView(LoginRequiredMixin, UpdateView):
+    model = Articulo
+    fields = '__all__'
+    template_name = 'activos/articulo_form.html'
+    success_url = reverse_lazy('activos:articulo_list')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name='Admin').exists():
+            messages.error(request, 'No tienes permisos para editar artículos.')
+            return redirect('activos:home')
+        return super().dispatch(request, *args, **kwargs)
+
+class ArticuloDeleteView(LoginRequiredMixin, DeleteView):
+    model = Articulo
+    template_name = 'activos/articulo_confirm_delete.html'
+    success_url = reverse_lazy('activos:articulo_list')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name='Admin').exists():
+            messages.error(request, 'No tienes permisos para eliminar artículos.')
+            return redirect('activos:home')
+        return super().dispatch(request, *args, **kwargs)
+
+
+# Zona CRUD
+from .models import Zona
+
+class ZonaListView(LoginRequiredMixin, ListView):
+    model = Zona
+    template_name = 'activos/zona_list.html'
+    context_object_name = 'zonas'
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name='Admin').exists():
+            messages.error(request, 'No tienes permisos para ver zonas.')
+            return redirect('activos:home')
+        return super().dispatch(request, *args, **kwargs)
+
+class ZonaCreateView(LoginRequiredMixin, CreateView):
+    model = Zona
+    fields = '__all__'
+    template_name = 'activos/zona_form.html'
+    success_url = reverse_lazy('activos:zona_list')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name='Admin').exists():
+            messages.error(request, 'No tienes permisos para crear zonas.')
+            return redirect('activos:home')
+        return super().dispatch(request, *args, **kwargs)
+
+class ZonaUpdateView(LoginRequiredMixin, UpdateView):
+    model = Zona
+    fields = '__all__'
+    template_name = 'activos/zona_form.html'
+    success_url = reverse_lazy('activos:zona_list')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name='Admin').exists():
+            messages.error(request, 'No tienes permisos para editar zonas.')
+            return redirect('activos:home')
+        return super().dispatch(request, *args, **kwargs)
+
+class ZonaDeleteView(LoginRequiredMixin, DeleteView):
+    model = Zona
+    template_name = 'activos/zona_confirm_delete.html'
+    success_url = reverse_lazy('activos:zona_list')
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.groups.filter(name='Admin').exists():
+            messages.error(request, 'No tienes permisos para eliminar zonas.')
             return redirect('activos:home')
         return super().dispatch(request, *args, **kwargs)
 

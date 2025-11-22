@@ -1,34 +1,103 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h2>Detalle del Activo</h2>
-    <table class="table table-bordered">
-        <tr><th>ITEM</th><td>{{ object.item }}</td></tr>
-        <tr><th>DOCUMENTO</th><td>{{ object.documento }}</td></tr>
-        <tr><th>NOMBRES Y APELLIDOS</th><td>{{ object.nombres_apellidos }}</td></tr>
-        <tr><th>IMEI 1</th><td>{{ object.imei1 }}</td></tr>
-        <tr><th>IMEI 2</th><td>{{ object.imei2 }}</td></tr>
-        <tr><th>S/N</th><td>{{ object.sn }}</td></tr>
-        <tr><th>MAC SUPERFLEX</th><td>{{ object.mac_superflex }}</td></tr>
-        <tr><th>ARTÍCULO</th><td>{{ object.articulo }}</td></tr>
-        <tr><th>MARCA</th><td>{{ object.marca }}</td></tr>
-        <tr><th>ACTIVO</th><td>{{ object.activo }}</td></tr>
-        <tr><th>CARGO</th><td>{{ object.cargo }}</td></tr>
-        <tr><th>ESTADO</th><td>{{ object.estado }}</td></tr>
-        <tr><th>FECHA DE CONFIRMACIÓN</th><td>{{ object.fecha_confirmacion }}</td></tr>
-        <tr><th>RESPONSABLE</th><td>{{ object.responsable }}</td></tr>
-        <tr><th>IDENTIFICACIÓN</th><td>{{ object.identificacion }}</td></tr>
-        <tr><th>ZONA</th><td>{{ object.zona }}</td></tr>
-        <tr><th>OBSERVACIÓN</th><td>{{ object.observacion }}</td></tr>
-        <tr><th>PUNTO DE VENTA</th><td>{{ object.punto_venta }}</td></tr>
-        <tr><th>CÓDIGO CENTRO DE COSTO</th><td>{{ object.codigo_centro_costo }}</td></tr>
-        <tr><th>CENTRO DE COSTO PUNTO</th><td>{{ object.centro_costo_punto }}</td></tr>
-        <tr><th>FECHA DE SALIDA DE BODEGA</th><td>{{ object.fecha_salida_bodega }}</td></tr>
-        <tr><th>FECHA DE CREACIÓN</th><td>{{ object.fecha_creacion }}</td></tr>
-        <tr><th>FECHA DE MODIFICACIÓN</th><td>{{ object.fecha_modificacion }}</td></tr>
-    </table>
-    <a href="{% url 'activos:home' %}" class="btn btn-primary">Volver al listado</a>
+<h2>Detalle del Activo</h2>
+<table class="table table-bordered">
+    <tr>
+        <th>ITEM</th>
+        <td>{{ object.item }}</td>
+    </tr>
+    <tr>
+        <th>DOCUMENTO</th>
+        <td>{{ object.documento }}</td>
+    </tr>
+    <tr>
+        <th>NOMBRES Y APELLIDOS</th>
+        <td>{{ object.nombres_apellidos }}</td>
+    </tr>
+    <tr>
+        <th>IMEI 1</th>
+        <td>{{ object.imei1 }}</td>
+    </tr>
+    <tr>
+        <th>IMEI 2</th>
+        <td>{{ object.imei2 }}</td>
+    </tr>
+    <tr>
+        <th>S/N</th>
+        <td>{{ object.sn }}</td>
+    </tr>
+    <tr>
+        <th>MAC SUPERFLEX</th>
+        <td>{{ object.mac_superflex }}</td>
+    </tr>
+    <tr>
+        <th>ARTÍCULO</th>
+        <td>{{ object.articulo }}</td>
+    </tr>
+    <tr>
+        <th>MARCA</th>
+        <td>{{ object.marca }}</td>
+    </tr>
+    <tr>
+        <th>ACTIVO</th>
+        <td>{{ object.activo }}</td>
+    </tr>
+    <tr>
+        <th>CARGO</th>
+        <td>{{ object.cargo }}</td>
+    </tr>
+    <tr>
+        <th>ESTADO</th>
+        <td>{{ object.estado }}</td>
+    </tr>
+    <tr>
+        <th>FECHA DE CONFIRMACIÓN</th>
+        <td>{{ object.fecha_confirmacion }}</td>
+    </tr>
+    <tr>
+        <th>RESPONSABLE</th>
+        <td>{{ object.responsable }}</td>
+    </tr>
+    <tr>
+        <th>IDENTIFICACIÓN</th>
+        <td>{{ object.identificacion }}</td>
+    </tr>
+    <tr>
+        <th>ZONA</th>
+        <td>{{ object.zona }}</td>
+    </tr>
+    <tr>
+        <th>OBSERVACIÓN</th>
+        <td>{{ object.observacion }}</td>
+    </tr>
+    <tr>
+        <th>PUNTO DE VENTA</th>
+        <td>{{ object.punto_venta }}</td>
+    </tr>
+    <tr>
+        <th>CÓDIGO CENTRO DE COSTO</th>
+        <td>{{ object.codigo_centro_costo }}</td>
+    </tr>
+    <tr>
+        <th>CENTRO DE COSTO PUNTO</th>
+        <td>{{ object.centro_costo_punto }}</td>
+    </tr>
+    <tr>
+        <th>FECHA DE SALIDA DE BODEGA</th>
+        <td>{{ object.fecha_salida_bodega }}</td>
+    </tr>
+    <tr>
+        <th>FECHA DE CREACIÓN</th>
+        <td>{{ object.fecha_creacion }}</td>
+    </tr>
+    <tr>
+        <th>FECHA DE MODIFICACIÓN</th>
+        <td>{{ object.fecha_modificacion }}</td>
+    </tr>
+</table>
+<a href="{% url 'activos:home' %}" class="btn btn-primary">Volver al listado</a>
 {% if user.groups.all.0.name == 'Admin' or user.groups.all.0.name == 'Logística' %}
-    <a href="{% url 'activos:editar_activo' object.pk %}" class="btn btn-warning">Editar</a>
+<a href="{% url 'activos:activo_update' object.pk %}" class="btn btn-warning">Editar</a>
 {% endif %}
 {% endblock %}

@@ -18,20 +18,20 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="ubicacion_origen">Ubicación Origen</label>
-                <select name="ubicacion_origen" class="form-control">
+                <label for="zona_origen">Zona Origen</label>
+                <select name="zona_origen" class="form-control">
                     <option value="">Ninguna</option>
-                    {% for ubicacion in ubicaciones %}
-                    <option value="{{ ubicacion.id }}">{{ ubicacion.nombre }}</option>
+                    {% for zona in zonas %}
+                    <option value="{{ zona }}">{{ zona }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="form-group">
-                <label for="ubicacion_destino">Ubicación Destino</label>
-                <select name="ubicacion_destino" class="form-control">
+                <label for="zona_destino">Zona Destino</label>
+                <select name="zona_destino" class="form-control">
                     <option value="">Ninguna</option>
-                    {% for ubicacion in ubicaciones %}
-                    <option value="{{ ubicacion.id }}">{{ ubicacion.nombre }}</option>
+                    {% for zona in zonas %}
+                    <option value="{{ zona }}">{{ zona }}</option>
                     {% endfor %}
                 </select>
             </div>
