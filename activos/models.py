@@ -28,18 +28,22 @@ class Categoria(models.Model):
         verbose_name_plural = "Categorías"
 
 
+class Marca(models.Model):
+    nombre = models.CharField(max_length=100, verbose_name="Nombre de la Marca")
+    categoria = models.ForeignKey('Categoria', on_delete=models.CASCADE, related_name='marcas', verbose_name="Categoría")
+    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
+    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
 
+    def __str__(self):
+        return f"{self.nombre} ({self.categoria.nombre})"
+
+    class Meta:
+        verbose_name = "Marca"
+        verbose_name_plural = "Marcas"
+        unique_together = ['nombre', 'categoria']
 
 
 class Activo(models.Model):
-    MARCA_CHOICES = [
-        ('SUNMI V1', 'SUNMI V1'),
-        ('SUNMI V2', 'SUNMI V2'),
-        ('SUNMI V2 PRO', 'SUNMI V2 PRO'),
-        ('N910', 'N910'),
-        ('NEWLAND GRIS', 'NEWLAND GRIS'),
-    ]
-
     item = models.AutoField(primary_key=True, verbose_name="ITEM")
     documento = models.CharField(max_length=100, blank=True, null=True, verbose_name="DOCUMENTO")
     nombres_apellidos = models.CharField(max_length=200, blank=True, null=True, verbose_name="NOMBRES Y APELLIDOS")
@@ -47,7 +51,8 @@ class Activo(models.Model):
     imei2 = models.CharField(max_length=100, blank=True, null=True, verbose_name="IMEI 2")
     sn = models.CharField(max_length=100, blank=True, null=True, verbose_name="S/N")
     mac_superflex = models.CharField(max_length=100, blank=True, null=True, verbose_name="MAC SUPERFLEX")
-    marca = models.CharField(max_length=20, choices=MARCA_CHOICES, blank=True, null=True, verbose_name="MARCA")
+    marca_old = models.CharField(max_length=100, blank=True, null=True, verbose_name="MARCA OLD")  # Campo temporal
+    marca = models.ForeignKey('Marca', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="MARCA")
     activo = models.CharField(max_length=100, blank=True, null=True, verbose_name="ACTIVO")
     cargo = models.CharField(max_length=100, default="vendedor ambulante", verbose_name="CARGO")
     estado = models.CharField(max_length=100, default="activo confirmado", verbose_name="ESTADO")

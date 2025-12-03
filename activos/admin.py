@@ -1,5 +1,22 @@
 from django.contrib import admin
-from .models import Activo, Historial
+from django.contrib import admin
+from .models import Activo, Historial, Categoria, Marca
+
+class MarcaInline(admin.TabularInline):
+    model = Marca
+    extra = 1
+
+@admin.register(Categoria)
+class CategoriaAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'descripcion', 'fecha_creacion')
+    search_fields = ('nombre',)
+    inlines = [MarcaInline]
+
+@admin.register(Marca)
+class MarcaAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'categoria', 'descripcion', 'fecha_creacion')
+    list_filter = ('categoria',)
+    search_fields = ('nombre', 'categoria__nombre')
 
 @admin.register(Activo)
 class ActivoAdmin(admin.ModelAdmin):

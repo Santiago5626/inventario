@@ -172,8 +172,6 @@ Acceder a http://127.0.0.1:8000/
 
 ## Mejoras Futuras
 
-- API REST para integración móvil.
 - Dashboards con gráficas (Chart.js).
 - Más tipos de reportes.
-- Notificaciones por email.
 - Control de inventario de consumibles.

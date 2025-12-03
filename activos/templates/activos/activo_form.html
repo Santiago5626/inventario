@@ -20,14 +20,7 @@
                         {% csrf_token %}
 
                         <div class="row g-3">
-                            <!-- Fila 1 -->
-                            <div class="col-md-6">
-                                <label for="{{ form.item.id_for_label }}" class="form-label fw-bold">ITEM</label>
-                                {{ form.item }}
-                                {% if form.item.errors %}
-                                <div class="text-danger small">{{ form.item.errors.0 }}</div>
-                                {% endif %}
-                            </div>
+                            <!-- Fila 1: Documento y Nombres -->
                             <div class="col-md-6">
                                 <label for="{{ form.documento.id_for_label }}"
                                     class="form-label fw-bold">Documento</label>
@@ -36,8 +29,6 @@
                                 <div class="text-danger small">{{ form.documento.errors.0 }}</div>
                                 {% endif %}
                             </div>
-
-                            <!-- Fila 2 -->
                             <div class="col-md-6">
                                 <label for="{{ form.nombres_apellidos.id_for_label }}"
                                     class="form-label fw-bold">Nombres y Apellidos</label>
@@ -46,6 +37,8 @@
                                 <div class="text-danger small">{{ form.nombres_apellidos.errors.0 }}</div>
                                 {% endif %}
                             </div>
+
+                            <!-- Fila 2: Categoría y Marca -->
                             <div class="col-md-6">
                                 <label for="{{ form.categoria.id_for_label }}"
                                     class="form-label fw-bold">Categoría</label>
@@ -54,8 +47,6 @@
                                 <div class="text-danger small">{{ form.categoria.errors.0 }}</div>
                                 {% endif %}
                             </div>
-
-                            <!-- Fila 3 -->
                             <div class="col-md-6">
                                 <label for="{{ form.marca.id_for_label }}" class="form-label fw-bold">Marca</label>
                                 {{ form.marca }}
@@ -63,6 +54,8 @@
                                 <div class="text-danger small">{{ form.marca.errors.0 }}</div>
                                 {% endif %}
                             </div>
+
+                            <!-- Fila 3: Estado y Zona -->
                             <div class="col-md-6">
                                 <label for="{{ form.estado.id_for_label }}" class="form-label fw-bold">Estado</label>
                                 {{ form.estado }}
@@ -70,13 +63,21 @@
                                 <div class="text-danger small">{{ form.estado.errors.0 }}</div>
                                 {% endif %}
                             </div>
-
-                            <!-- Fila 4 -->
                             <div class="col-md-6">
                                 <label for="{{ form.zona.id_for_label }}" class="form-label fw-bold">Zona</label>
                                 {{ form.zona }}
                                 {% if form.zona.errors %}
                                 <div class="text-danger small">{{ form.zona.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Fila 4: Identificación del Responsable y Responsable -->
+                            <div class="col-md-6">
+                                <label for="{{ form.identificacion.id_for_label }}"
+                                    class="form-label fw-bold">Identificación del Responsable</label>
+                                {{ form.identificacion }}
+                                {% if form.identificacion.errors %}
+                                <div class="text-danger small">{{ form.identificacion.errors.0 }}</div>
                                 {% endif %}
                             </div>
                             <div class="col-md-6">
@@ -88,25 +89,41 @@
                                 {% endif %}
                             </div>
 
-                            <!-- Fila 5 -->
+                            <!-- Fila 5: Cargo y Activo -->
                             <div class="col-md-6">
-                                <label for="{{ form.identificacion.id_for_label }}"
-                                    class="form-label fw-bold">Identificación</label>
-                                {{ form.identificacion }}
-                                {% if form.identificacion.errors %}
-                                <div class="text-danger small">{{ form.identificacion.errors.0 }}</div>
+                                <label for="{{ form.cargo.id_for_label }}" class="form-label fw-bold">Cargo</label>
+                                {{ form.cargo }}
+                                {% if form.cargo.errors %}
+                                <div class="text-danger small">{{ form.cargo.errors.0 }}</div>
                                 {% endif %}
                             </div>
                             <div class="col-md-6">
-                                <label for="{{ form.punto_venta.id_for_label }}" class="form-label fw-bold">Punto de
-                                    Venta</label>
-                                {{ form.punto_venta }}
-                                {% if form.punto_venta.errors %}
-                                <div class="text-danger small">{{ form.punto_venta.errors.0 }}</div>
+                                <label for="{{ form.activo.id_for_label }}" class="form-label fw-bold">Activo</label>
+                                {{ form.activo }}
+                                {% if form.activo.errors %}
+                                <div class="text-danger small">{{ form.activo.errors.0 }}</div>
                                 {% endif %}
                             </div>
 
-                            <!-- Fila 6 -->
+                            <!-- Fila 6: Código Centro de Costo y Nombre Centro de Costo -->
+                            <div class="col-md-6">
+                                <label for="{{ form.codigo_centro_costo.id_for_label }}"
+                                    class="form-label fw-bold">Código Centro de Costo</label>
+                                {{ form.codigo_centro_costo }}
+                                {% if form.codigo_centro_costo.errors %}
+                                <div class="text-danger small">{{ form.codigo_centro_costo.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label for="{{ form.centro_costo_punto.id_for_label }}"
+                                    class="form-label fw-bold">Nombre Centro de Costo</label>
+                                {{ form.centro_costo_punto }}
+                                {% if form.centro_costo_punto.errors %}
+                                <div class="text-danger small">{{ form.centro_costo_punto.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Fila 7: IMEI 1 e IMEI 2 -->
                             <div class="col-md-6">
                                 <label for="{{ form.imei1.id_for_label }}" class="form-label fw-bold">IMEI 1</label>
                                 {{ form.imei1 }}
@@ -122,7 +139,7 @@
                                 {% endif %}
                             </div>
 
-                            <!-- Fila 7 -->
+                            <!-- Fila 8: S/N y MAC SUPERFLEX -->
                             <div class="col-md-6">
                                 <label for="{{ form.sn.id_for_label }}" class="form-label fw-bold">S/N</label>
                                 {{ form.sn }}
@@ -139,29 +156,13 @@
                                 {% endif %}
                             </div>
 
-                            <!-- Fila 8 -->
+                            <!-- Fila 9: Punto de Venta y Fecha de Salida de Bodega -->
                             <div class="col-md-6">
-                                <label for="{{ form.cargo.id_for_label }}" class="form-label fw-bold">Cargo</label>
-                                {{ form.cargo }}
-                                {% if form.cargo.errors %}
-                                <div class="text-danger small">{{ form.cargo.errors.0 }}</div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6">
-                                <label for="{{ form.activo.id_for_label }}" class="form-label fw-bold">Activo</label>
-                                {{ form.activo }}
-                                {% if form.activo.errors %}
-                                <div class="text-danger small">{{ form.activo.errors.0 }}</div>
-                                {% endif %}
-                            </div>
-
-                            <!-- Fila 9 -->
-                            <div class="col-md-6">
-                                <label for="{{ form.fecha_confirmacion.id_for_label }}" class="form-label fw-bold">Fecha
-                                    de Confirmación</label>
-                                {{ form.fecha_confirmacion }}
-                                {% if form.fecha_confirmacion.errors %}
-                                <div class="text-danger small">{{ form.fecha_confirmacion.errors.0 }}</div>
+                                <label for="{{ form.punto_venta.id_for_label }}" class="form-label fw-bold">Punto de
+                                    Venta</label>
+                                {{ form.punto_venta }}
+                                {% if form.punto_venta.errors %}
+                                <div class="text-danger small">{{ form.punto_venta.errors.0 }}</div>
                                 {% endif %}
                             </div>
                             <div class="col-md-6">
@@ -170,24 +171,6 @@
                                 {{ form.fecha_salida_bodega }}
                                 {% if form.fecha_salida_bodega.errors %}
                                 <div class="text-danger small">{{ form.fecha_salida_bodega.errors.0 }}</div>
-                                {% endif %}
-                            </div>
-
-                            <!-- Fila 10 -->
-                            <div class="col-md-6">
-                                <label for="{{ form.codigo_centro_costo.id_for_label }}"
-                                    class="form-label fw-bold">Código Centro de Costo</label>
-                                {{ form.codigo_centro_costo }}
-                                {% if form.codigo_centro_costo.errors %}
-                                <div class="text-danger small">{{ form.codigo_centro_costo.errors.0 }}</div>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6">
-                                <label for="{{ form.centro_costo_punto.id_for_label }}"
-                                    class="form-label fw-bold">Centro de Costo Punto</label>
-                                {{ form.centro_costo_punto }}
-                                {% if form.centro_costo_punto.errors %}
-                                <div class="text-danger small">{{ form.centro_costo_punto.errors.0 }}</div>
                                 {% endif %}
                             </div>
 
@@ -217,35 +200,83 @@
     </div>
 </div>
 
+<!-- Datalists para autocompletado -->
+<datalist id="documento-list">
+    {% for doc in documentos %}
+    <option value="{{ doc }}">
+        {% endfor %}
+</datalist>
+
+<datalist id="nombres-list">
+    {% for nombre in nombres %}
+    <option value="{{ nombre }}">
+        {% endfor %}
+</datalist>
+
+<datalist id="identificacion-list">
+    {% for ident in identificaciones %}
+    <option value="{{ ident }}">
+        {% endfor %}
+</datalist>
+
+<datalist id="codigo-centro-list">
+    {% for codigo in codigos_centro %}
+    <option value="{{ codigo }}">
+        {% endfor %}
+</datalist>
+
+<datalist id="nombre-centro-list">
+    {% for nombre in nombres_centro %}
+    <option value="{{ nombre }}">
+        {% endfor %}
+</datalist>
+
 <script>
-    // Bootstrap form validation
-    (function () {
+    document.addEventListener('DOMContentLoaded', function () {
         'use strict'
 
-        // Agregar clases form-control a los inputs si no las tienen
-        document.querySelectorAll('form input, form select, form textarea').forEach(function (element) {
-            if (!element.classList.contains('form-control') && !element.classList.contains('form-select')) {
-                if (element.tagName === 'SELECT') {
-                    element.classList.add('form-select');
-                } else {
-                    element.classList.add('form-control');
-                }
-            }
-        });
+        // Filtrado dinámico de marcas por categoría
+        const categoriaSelect = document.getElementById('id_categoria');
+        const marcaSelect = document.getElementById('id_marca');
 
-        // Establecer fecha de salida automática si está vacía
-        const fechaSalidaInput = document.getElementById('{{ form.fecha_salida_bodega.id_for_label }}');
-        if (fechaSalidaInput && !fechaSalidaInput.value) {
-            const today = new Date().toISOString().split('T')[0];
-            fechaSalidaInput.value = today;
+        // Obtener datos del contexto de forma segura
+        const marcasPorCategoria = JSON.parse('{{ marcas_por_categoria_json|escapejs }}');
+
+        function actualizarMarcas() {
+            const categoriaId = categoriaSelect.value;
+            const marcaActual = marcaSelect.value;
+
+            // Limpiar opciones
+            marcaSelect.innerHTML = '<option value="">Seleccione una marca</option>';
+
+            if (categoriaId && marcasPorCategoria[categoriaId]) {
+                marcasPorCategoria[categoriaId].forEach(marca => {
+                    const option = document.createElement('option');
+                    option.value = marca.id;
+                    option.textContent = marca.nombre;
+
+                    // Mantener selección si coincide
+                    if (marca.id == marcaActual) {
+                        option.selected = true;
+                    }
+
+                    marcaSelect.appendChild(option);
+                });
+                marcaSelect.disabled = false;
+            } else {
+                marcaSelect.disabled = true;
+            }
+        }
+
+        if (categoriaSelect && marcaSelect) {
+            categoriaSelect.addEventListener('change', actualizarMarcas);
+            // Ejecutar al cargar para establecer estado inicial
+            actualizarMarcas();
         }
 
         // Auto-resize observación
         const observacionInput = document.getElementById('{{ form.observacion.id_for_label }}');
         if (observacionInput) {
-            observacionInput.style.overflow = 'hidden';
-            observacionInput.style.resize = 'none';
-
             const resize = () => {
                 observacionInput.style.height = 'auto';
                 observacionInput.style.height = observacionInput.scrollHeight + 'px';
@@ -253,7 +284,7 @@
 
             observacionInput.addEventListener('input', resize);
             // Initial resize in case there is content
-            setTimeout(resize, 100); // Small delay to ensure rendering
+            setTimeout(resize, 100);
         }
 
         // Validación
@@ -267,6 +298,6 @@
                 form.classList.add('was-validated')
             }, false)
         })
-    })()
+    })
 </script>
 {% endblock %}

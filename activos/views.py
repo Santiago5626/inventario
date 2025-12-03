@@ -5,11 +5,13 @@ from django.views.generic import CreateView, DetailView, UpdateView, DeleteView,
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
 import csv
+import json
 from openpyxl import Workbook
 from django.contrib.auth.models import Group
 from django.db import models
 from django.contrib import messages
-from .models import Activo, Trazabilidad, Historial, Zona, Categoria
+from .models import Activo, Trazabilidad, Historial, Zona, Categoria, Marca
+from .forms import ActivoForm
 
 @login_required
 def dashboard_redirect(request):
@@ -62,6 +64,28 @@ class ActivoListView(LoginRequiredMixin, ListView):
     model = Activo
     template_name = 'activos/home.html'
     context_object_name = 'activos'
+    
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        # Filtro por documento del asesor
+        documento = self.request.GET.get('documento', '').strip()
+        if documento:
+            queryset = queryset.filter(documento__icontains=documento)
+        
+        # Filtro por S/N
+        sn = self.request.GET.get('sn', '').strip()
+        if sn:
+            queryset = queryset.filter(sn__icontains=sn)
+        
+        return queryset
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Pasar los valores de los filtros al contexto para mantenerlos en el formulario
+        context['filtro_documento'] = self.request.GET.get('documento', '')
+        context['filtro_sn'] = self.request.GET.get('sn', '')
+        return context
 
 
 @login_required
@@ -150,9 +174,34 @@ def exportar_excel(request):
 
 class ActivoCreateView(LoginRequiredMixin, CreateView):
     model = Activo
-    fields = '__all__'
+    form_class = ActivoForm
     template_name = 'activos/activo_form.html'
     success_url = reverse_lazy('activos:home')
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['is_update'] = False
+        return kwargs
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Datos para autocompletado
+        context['documentos'] = Activo.objects.exclude(documento__isnull=True).exclude(documento='').values_list('documento', flat=True).distinct()
+        context['nombres'] = Activo.objects.exclude(nombres_apellidos__isnull=True).exclude(nombres_apellidos='').values_list('nombres_apellidos', flat=True).distinct()
+        context['identificaciones'] = Activo.objects.exclude(identificacion__isnull=True).exclude(identificacion='').values_list('identificacion', flat=True).distinct()
+        context['codigos_centro'] = Activo.objects.exclude(codigo_centro_costo__isnull=True).exclude(codigo_centro_costo='').values_list('codigo_centro_costo', flat=True).distinct()
+        context['nombres_centro'] = Activo.objects.exclude(centro_costo_punto__isnull=True).exclude(centro_costo_punto='').values_list('centro_costo_punto', flat=True).distinct()
+        
+        # Datos de marcas agrupadas por categoría para filtrado dinámico
+        marcas_por_categoria = {}
+        for marca in Marca.objects.select_related('categoria').all():
+            cat_id = marca.categoria.id
+            if cat_id not in marcas_por_categoria:
+                marcas_por_categoria[cat_id] = []
+            marcas_por_categoria[cat_id].append({'id': marca.id, 'nombre': marca.nombre})
+        context['marcas_por_categoria_json'] = json.dumps(marcas_por_categoria)
+        
+        return context
 
 class ActivoDetailView(LoginRequiredMixin, DetailView):
     model = Activo
@@ -160,9 +209,34 @@ class ActivoDetailView(LoginRequiredMixin, DetailView):
 
 class ActivoUpdateView(LoginRequiredMixin, UpdateView):
     model = Activo
-    fields = '__all__'
+    form_class = ActivoForm
     template_name = 'activos/activo_form.html'
     success_url = reverse_lazy('activos:home')
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['is_update'] = True
+        return kwargs
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Datos para autocompletado
+        context['documentos'] = Activo.objects.exclude(documento__isnull=True).exclude(documento='').values_list('documento', flat=True).distinct()
+        context['nombres'] = Activo.objects.exclude(nombres_apellidos__isnull=True).exclude(nombres_apellidos='').values_list('nombres_apellidos', flat=True).distinct()
+        context['identificaciones'] = Activo.objects.exclude(identificacion__isnull=True).exclude(identificacion='').values_list('identificacion', flat=True).distinct()
+        context['codigos_centro'] = Activo.objects.exclude(codigo_centro_costo__isnull=True).exclude(codigo_centro_costo='').values_list('codigo_centro_costo', flat=True).distinct()
+        context['nombres_centro'] = Activo.objects.exclude(centro_costo_punto__isnull=True).exclude(centro_costo_punto='').values_list('centro_costo_punto', flat=True).distinct()
+        
+        # Datos de marcas agrupadas por categoría para filtrado dinámico
+        marcas_por_categoria = {}
+        for marca in Marca.objects.select_related('categoria').all():
+            cat_id = marca.categoria.id
+            if cat_id not in marcas_por_categoria:
+                marcas_por_categoria[cat_id] = []
+            marcas_por_categoria[cat_id].append({'id': marca.id, 'nombre': marca.nombre})
+        context['marcas_por_categoria_json'] = json.dumps(marcas_por_categoria)
+        
+        return context
 
 class ActivoDeleteView(LoginRequiredMixin, DeleteView):
     model = Activo
@@ -291,9 +365,24 @@ class ActivoUpdateView(LoginRequiredMixin, UpdateView):
 # Update ActivoCreateView for permissions
 class ActivoCreateView(LoginRequiredMixin, CreateView):
     model = Activo
-    fields = '__all__'
+    form_class = ActivoForm
     template_name = 'activos/activo_form.html'
     success_url = reverse_lazy('activos:home')
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['is_update'] = False
+        return kwargs
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Datos para autocompletado
+        context['documentos'] = Activo.objects.exclude(documento__isnull=True).exclude(documento='').values_list('documento', flat=True).distinct()
+        context['nombres'] = Activo.objects.exclude(nombres_apellidos__isnull=True).exclude(nombres_apellidos='').values_list('nombres_apellidos', flat=True).distinct()
+        context['identificaciones'] = Activo.objects.exclude(identificacion__isnull=True).exclude(identificacion='').values_list('identificacion', flat=True).distinct()
+        context['codigos_centro'] = Activo.objects.exclude(codigo_centro_costo__isnull=True).exclude(codigo_centro_costo='').values_list('codigo_centro_costo', flat=True).distinct()
+        context['nombres_centro'] = Activo.objects.exclude(centro_costo_punto__isnull=True).exclude(centro_costo_punto='').values_list('centro_costo_punto', flat=True).distinct()
+        return context
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.groups.filter(name='Admin').exists():
