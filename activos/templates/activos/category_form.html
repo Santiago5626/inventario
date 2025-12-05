@@ -100,51 +100,50 @@
         removeInfoAlert();
 
         const marcaHtml = `
-            <div class="marca-item mb-2 p-3 border rounded bg-light">
-                <div class="row align-items-center">
-                    <div class="col-md-10">
-                        <input type="text" name="marca_nombre[]" class="form-control" 
-                               placeholder="Nombre de la marca (Ej: Samsung, Apple, HP...)" required>
-                        <input type="hidden" name="marca_id[]" value="">
-                    </div>
-                    <div class="col-md-2 text-end">
-                        <button type="button" class="btn btn-danger btn-sm remove-marca">
-                            <i class="fas fa-times"></i>
-                        </button>
+                <div class="marca-item mb-2 p-3 border rounded bg-light">
+                    <div class="row align-items-center">
+                        <div class="col-md-10">
+                            <input type="text" name="marca_nombre[]" class="form-control" 
+                                   placeholder="Nombre de la marca (Ej: Samsung, Apple, HP...)" required>
+                            <input type="hidden" name="marca_id[]" value="">
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <button type="button" class="btn btn-danger btn-sm remove-marca">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `;
+            `;
 
         container.insertAdjacentHTML('beforeend', marcaHtml);
         marcaCount++;
-        attachRemoveHandlers();
     });
 
-    // Manejar eliminación de marcas
-    function attachRemoveHandlers() {
-        document.querySelectorAll('.remove-marca').forEach(btn => {
-            btn.onclick = function () {
-                if (confirm('¿Eliminar esta marca?')) {
-                    this.closest('.marca-item').remove();
-                    marcaCount--;
+    // Manejar eliminación de marcas usando Delegación de Eventos
+    container.addEventListener('click', function (e) {
+        const btn = e.target.closest('.remove-marca');
+        if (!btn) return;
 
-                    // Si no quedan marcas, mostrar mensaje
-                    if (marcaCount === 0 && container.querySelectorAll('.marca-item').length === 0) {
-                        container.innerHTML = `
+        if (confirm('¿Eliminar esta marca?')) {
+            const item = btn.closest('.marca-item');
+            if (item) {
+                item.remove();
+                marcaCount--;
+
+                // Si no quedan marcas, mostrar mensaje
+                if (marcaCount === 0 && container.querySelectorAll('.marca-item').length === 0) {
+                    container.innerHTML = `
                             <div class="alert alert-info">
                                 <i class="fas fa-info-circle me-2"></i>
                                 No hay marcas agregadas. Haz clic en "Agregar Marca" para comenzar.
                             </div>
                         `;
-                    }
                 }
-            };
-        });
-    }
-
-    attachRemoveHandlers();
-});
+            }
+        }
+    });
+    });
 </script>
 
 {% endblock %}

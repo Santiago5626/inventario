@@ -283,6 +283,39 @@ class ActivoUpdateView(LoginRequiredMixin, UpdateView):
         
         return context
 
+class ActivoAsignarView(LoginRequiredMixin, UpdateView):
+    model = Activo
+    form_class = ActivoForm
+    template_name = 'activos/activo_form.html'
+    success_url = reverse_lazy('activos:home')
+    
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['is_update'] = True
+        kwargs['is_assignment'] = True
+        return kwargs
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['titulo'] = 'Asignar Activo'
+        # Datos para autocompletado (igual que en UpdateView)
+        context['documentos'] = Activo.objects.exclude(documento__isnull=True).exclude(documento='').values_list('documento', flat=True).distinct()
+        context['nombres'] = Activo.objects.exclude(nombres_apellidos__isnull=True).exclude(nombres_apellidos='').values_list('nombres_apellidos', flat=True).distinct()
+        context['identificaciones'] = Activo.objects.exclude(identificacion__isnull=True).exclude(identificacion='').values_list('identificacion', flat=True).distinct()
+        context['codigos_centro'] = Activo.objects.exclude(codigo_centro_costo__isnull=True).exclude(codigo_centro_costo='').values_list('codigo_centro_costo', flat=True).distinct()
+        context['nombres_centro'] = Activo.objects.exclude(centro_costo_punto__isnull=True).exclude(centro_costo_punto='').values_list('centro_costo_punto', flat=True).distinct()
+        
+        # Datos de marcas agrupadas por categoría para filtrado dinámico
+        marcas_por_categoria = {}
+        for marca in Marca.objects.select_related('categoria').all():
+            cat_id = marca.categoria.id
+            if cat_id not in marcas_por_categoria:
+                marcas_por_categoria[cat_id] = []
+            marcas_por_categoria[cat_id].append({'id': marca.id, 'nombre': marca.nombre})
+        context['marcas_por_categoria_json'] = json.dumps(marcas_por_categoria)
+        
+        return context
+
 class ActivoDeleteView(LoginRequiredMixin, DeleteView):
     model = Activo
     template_name = 'activos/activo_confirm_delete.html'
@@ -407,29 +440,157 @@ def reporte_por_sede(request):
         messages.error(request, 'No tienes permisos para ver reportes.')
         return redirect('activos:home')
 
-    zona_nombre = request.GET.get('zona')
-    if zona_nombre:
-        activos = Activo.objects.filter(zona=zona_nombre)
-    else:
-        activos = Activo.objects.all()
-        zona_nombre = None
+    # Obtener parámetros de filtro
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    zona = request.GET.get('zona')
+    categoria = request.GET.get('categoria')
+    estado = request.GET.get('estado')
 
-    zonas = Activo.objects.values_list('zona', flat=True).distinct()
-    return render(request, 'activos/reporte_por_zona.html', {
+    # Base queryset
+    activos = Activo.objects.all().select_related('categoria')
+
+    # Aplicar filtros
+    if fecha_inicio:
+        activos = activos.filter(fecha_creacion__date__gte=fecha_inicio)
+    if fecha_fin:
+        activos = activos.filter(fecha_creacion__date__lte=fecha_fin)
+    if zona:
+        activos = activos.filter(zona=zona)
+    if categoria:
+        activos = activos.filter(categoria_id=categoria)
+    if estado:
+        activos = activos.filter(estado=estado)
+
+    # Datos para los filtros
+    zonas = Activo.objects.values_list('zona', flat=True).distinct().order_by('zona')
+    categorias = Categoria.objects.all().order_by('nombre')
+    estados = Activo.objects.values_list('estado', flat=True).distinct().order_by('estado')
+
+    return render(request, 'activos/reporte_por_sede.html', {
         'activos': activos,
         'zonas': zonas,
-        'zona_seleccionada': zona_nombre,
+        'categorias': categorias,
+        'estados': estados,
+        # Mantener filtros seleccionados
+        'filtro_fecha_inicio': fecha_inicio,
+        'filtro_fecha_fin': fecha_fin,
+        'filtro_zona': zona,
+        'filtro_categoria': int(categoria) if categoria else '',
+        'filtro_estado': estado,
     })
 
 @login_required
-def exportar_csv(request):
-    activos = Activo.objects.all()
-    response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename=inventario_activos.csv'
-    writer = csv.writer(response)
-    writer.writerow([field.name for field in Activo._meta.get_fields()])
+def exportar_excel(request):
+    if request.user.rol not in ['admin', 'logistica', 'asignador']:
+        messages.error(request, 'No tienes permisos para exportar reportes.')
+        return redirect('activos:home')
+
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    
+    # Obtener parámetros de filtro (mismos que en reporte)
+    fecha_inicio = request.GET.get('fecha_inicio')
+    fecha_fin = request.GET.get('fecha_fin')
+    zona = request.GET.get('zona')
+    categoria = request.GET.get('categoria')
+    estado = request.GET.get('estado')
+
+    # Base queryset
+    activos = Activo.objects.all().select_related('categoria')
+
+    # Aplicar filtros
+    if fecha_inicio:
+        activos = activos.filter(fecha_creacion__date__gte=fecha_inicio)
+    if fecha_fin:
+        activos = activos.filter(fecha_creacion__date__lte=fecha_fin)
+    if zona:
+        activos = activos.filter(zona=zona)
+    if categoria:
+        activos = activos.filter(categoria_id=categoria)
+    if estado:
+        activos = activos.filter(estado=estado)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Reporte de Activos"
+
+    # Definir estilos
+    header_fill = PatternFill(start_color="0F172A", end_color="0F172A", fill_type="solid")
+    header_font = Font(bold=True, color="FFFFFF", size=12)
+    header_alignment = Alignment(horizontal="center", vertical="center")
+    border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+
+    # Headers completos
+    headers = ['ITEM', 'DOCUMENTO', 'NOMBRES Y APELLIDOS', 'IMEI 1', 'IMEI 2', 'S/N', 
+               'ICCID', 'OPERADOR', 'MAC SUPERFLEX', 'MARCA', 'ACTIVO', 'CARGO', 'ESTADO', 
+               'FECHA CONFIRMACIÓN', 'RESPONSABLE', 'IDENTIFICACIÓN', 'ZONA', 'CATEGORÍA', 
+               'OBSERVACIÓN', 'PUNTO DE VENTA', 'CÓDIGO CENTRO COSTO', 'CENTRO COSTO PUNTO', 
+               'FECHA SALIDA BODEGA', 'FECHA CREACIÓN']
+    
+    ws.append(headers)
+    
+    # Aplicar estilos a encabezados
+    for cell in ws[1]:
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.alignment = header_alignment
+        cell.border = border
+
+    # Data
     for activo in activos:
-        writer.writerow([str(getattr(activo, field.name)) for field in Activo._meta.get_fields()])
+        row = [
+            activo.item,
+            activo.documento or '',
+            activo.nombres_apellidos or '',
+            activo.imei1 or '',
+            activo.imei2 or '',
+            activo.sn or '',
+            activo.iccid or '',
+            activo.operador or '',
+            activo.mac_superflex or '',
+            str(activo.marca) if activo.marca else '',
+            activo.activo or '',
+            activo.cargo or '',
+            activo.estado or '',
+            activo.fecha_confirmacion.strftime('%d/%m/%Y') if activo.fecha_confirmacion else '',
+            activo.responsable or '',
+            activo.identificacion or '',
+            activo.zona or '',
+            str(activo.categoria) if activo.categoria else '',
+            activo.observacion or '',
+            activo.punto_venta or '',
+            activo.codigo_centro_costo or '',
+            activo.centro_costo_punto or '',
+            activo.fecha_salida_bodega.strftime('%d/%m/%Y') if activo.fecha_salida_bodega else '',
+            activo.fecha_creacion.strftime('%d/%m/%Y %H:%M') if activo.fecha_creacion else ''
+        ]
+        ws.append(row)
+        
+        # Aplicar bordes
+        for cell in ws[ws.max_row]:
+            cell.border = border
+
+    # Ajustar ancho de columnas
+    for column in ws.columns:
+        max_length = 0
+        column_letter = column[0].column_letter
+        for cell in column:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        adjusted_width = (max_length + 2) * 1.2
+        ws.column_dimensions[column_letter].width = adjusted_width
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename=reporte_activos.xlsx'
+    wb.save(response)
     return response
 
 

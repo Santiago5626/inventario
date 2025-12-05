@@ -1,7 +1,7 @@
 ﻿{% extends 'base.html' %}
 
 {% block title %}
-{% if form.instance.pk %}Editar Activo{% else %}Crear Activo{% endif %}
+{{ titulo|default:form.instance.pk|yesno:"Editar Activo,Crear Activo" }}
 {% endblock %}
 
 {% block content %}
@@ -12,7 +12,7 @@
                 <div class="card-header py-3" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
                     <h4 class="mb-0 text-white">
                         <i class="fas fa-{% if form.instance.pk %}edit{% else %}plus-circle{% endif %} me-2"></i>
-                        {% if form.instance.pk %}Editar Activo{% else %}Crear Nuevo Activo{% endif %}
+                        {{ titulo|default:form.instance.pk|yesno:"Editar Activo,Crear Nuevo Activo" }}
                     </h4>
                 </div>
                 <div class="card-body p-4">

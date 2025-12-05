@@ -220,15 +220,9 @@
 
                 // Habilitar/deshabilitar botón de editar según cantidad seleccionada
                 if (editBtn) {
-                    if (count === 1) {
-                        editBtn.disabled = false;
-                        editBtn.style.opacity = '1';
-                        editBtn.style.cursor = 'pointer';
-                    } else {
-                        editBtn.disabled = true;
-                        editBtn.style.opacity = '0.5';
-                        editBtn.style.cursor = 'not-allowed';
-                    }
+                    editBtn.disabled = count !== 1;
+                    editBtn.style.opacity = count === 1 ? '1' : '0.5';
+                    editBtn.style.cursor = count === 1 ? 'pointer' : 'not-allowed';
                 }
             } else {
                 actionsBar.classList.remove('show');
@@ -245,24 +239,22 @@
                 const checked = Array.from(checkboxes).filter(cb => cb.checked);
                 if (checked.length === 0) return;
 
-                // TODO: Implementar modal o página de asignación
-                alert('Funcionalidad de asignación en desarrollo');
+                if (checked.length === 1) {
+                    const pk = checked[0].dataset.pk;
+                    window.location.href = `/activos/${pk}/asignar/`;
+                } else {
+                    alert('Por favor selecciona solo un activo para asignar.');
+                }
             });
         }
 
-        // Editar (solo si hay uno seleccionado)
+        // Editar
         if (editBtn) {
             editBtn.addEventListener('click', function () {
-                if (this.disabled) {
-                    alert('Por favor selecciona solo un activo para editar.');
-                    return;
-                }
-
+                if (this.disabled) return;
                 const checked = Array.from(checkboxes).filter(cb => cb.checked);
                 if (checked.length === 1) {
                     const pk = checked[0].dataset.pk;
-                    // Construir la URL correctamente usando la ruta base actual
-                    // Asumiendo que la URL actual es /activos/ o similar
                     window.location.href = `/activos/${pk}/editar/`;
                 }
             });
@@ -275,18 +267,13 @@
                 if (checked.length === 0) return;
 
                 const count = checked.length;
-                const message = count === 1
-                    ? '¿Estás seguro de eliminar este activo?'
-                    : `¿Estás seguro de eliminar ${count} activos?`;
+                const message = count === 1 ? '¿Estás seguro de eliminar este activo?' : `¿Estás seguro de eliminar ${count} activos?`;
 
                 if (confirm(message)) {
+                    const ids = checked.map(cb => cb.dataset.pk);
                     if (count === 1) {
-                        // Eliminación individual
-                        const pk = checked[0].dataset.pk;
-                        window.location.href = `/activos/${pk}/eliminar/`;
+                        window.location.href = `/activos/${ids[0]}/eliminar/`;
                     } else {
-                        // Eliminación múltiple
-                        const ids = checked.map(cb => cb.dataset.pk);
                         const params = ids.map(id => `ids=${id}`).join('&');
                         window.location.href = `/activos/eliminar-multiples/?${params}`;
                     }

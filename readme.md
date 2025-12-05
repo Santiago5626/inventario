@@ -2,7 +2,7 @@
 
 ## Descripción del Proyecto
 
-Este proyecto es un sistema web responsive de inventario de máquinas PDA, diseñado para operar en línea con usuarios autenticados, roles y trazabilidad completa mediante historial de cambios.
+Este proyecto es un sistema web responsive de inventario de máquinas PDA, diseñado para operar en línea con usuarios autenticados, roles y tranzabilidad completa mediante historial de cambios.
 
 El objetivo es permitir:
 - Registrar activos que entran a bodega.
@@ -65,8 +65,8 @@ Permisos basados en grupos, con decoradores `@login_required` y checks de grupo 
 #### Activo
 Campos principales: item (auto), documento, nombres_apellidos, imei1, imei2, sn, mac_superflex, articulo, marca (choices), activo, cargo, estado, fecha_confirmacion, responsable, identificacion, zona, ubicacion (FK), articulo_fk (FK), observacion, punto_venta, codigo_centro_costo, centro_costo_punto, fecha_salida_bodega.
 
-#### Movimiento
-Registra movimientos: tipo (ingreso/salida/transferencia/cambio_estado), activo, usuario, ubicaciones origen/destino, estados anterior/nuevo, descripcion, fecha.
+#### Tranzabilidad
+Registra tranzabilidad: tipo (ingreso/salida/transferencia/cambio_estado), activo, usuario, ubicaciones origen/destino, estados anterior/nuevo, descripcion, fecha.
 
 #### Historial
 Auditoría: activo, usuario, campo_cambiado, valor_anterior, valor_nuevo, fecha.
@@ -91,7 +91,7 @@ Modelos auxiliares para clasificar activos.
 inventario_pda/
 │
 ├── activos/                # App principal
-│   ├── models.py           # Modelos: Activo, Movimiento, Historial, Ubicacion, Categoria, Articulo
+│   ├── models.py           # Modelos: Activo, Tranzabilidad, Historial, Ubicacion, Categoria, Articulo
 │   ├── views.py            # Vistas: CRUD Activos, Dashboards, Movimientos, etc.
 │   ├── urls.py             # URLs: home, admin_dashboard, CRUDs, etc.
 │   ├── admin.py            # Django Admin

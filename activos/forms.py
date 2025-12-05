@@ -78,6 +78,7 @@ class ActivoForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         is_update = kwargs.pop('is_update', False)
+        is_assignment = kwargs.pop('is_assignment', False)
         super().__init__(*args, **kwargs)
         
         # Configurar choices para estado según si es creación o edición
@@ -122,6 +123,27 @@ class ActivoForm(forms.ModelForm):
         for campo in campos_obligatorios:
             if campo in self.fields:
                 self.fields[campo].required = True
+
+        # Lógica para asignación: bloquear campos que ya tienen valor
+        if is_assignment and self.instance.pk:
+            for name, field in self.fields.items():
+                # Obtener valor del campo en la instancia
+                value = getattr(self.instance, name, None)
+                
+                # Si el campo tiene valor (no es None ni string vacío), hacerlo readonly
+                if value and value != '':
+                    # Para campos de texto/input
+                    field.widget.attrs['readonly'] = 'readonly'
+                    field.widget.attrs['class'] = field.widget.attrs.get('class', '') + ' bg-light'
+                    
+                    # Para selects, readonly no funciona igual en HTML, se usa disabled
+                    # pero disabled no envía el valor en el POST, así que necesitamos un campo hidden
+                    if isinstance(field.widget, forms.Select):
+                        # En este caso simple, usaremos un estilo visual y validación en clean si fuera necesario
+                        # O mejor: pointer-events: none y background gris para simular disabled pero enviar valor
+                        field.widget.attrs['style'] = 'pointer-events: none; background-color: #e9ecef;'
+                        field.widget.attrs['tabindex'] = '-1'
+                        field.widget.attrs['aria-disabled'] = 'true'
     
     def save(self, commit=True):
         instance = super().save(commit=False)
