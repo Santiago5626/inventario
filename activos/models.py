@@ -4,7 +4,7 @@ from django.conf import settings
 
 class Zona(models.Model):
     nombre = models.CharField(max_length=100, unique=True, verbose_name="Nombre de la Zona")
-    descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción")
+    codigo = models.CharField(max_length=20, blank=True, null=True, verbose_name="Código")
     fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
 
     def __str__(self):
@@ -98,6 +98,13 @@ class Activo(models.Model):
             operador_detectado = self.detectar_operador()
             if operador_detectado:
                 self.operador = operador_detectado
+        
+        # Lógica para establecer fecha de salida de bodega
+        # Si tiene responsable/asignado y no tiene fecha, establecer la fecha actual
+        if (self.responsable or self.estado == 'asignado') and not self.fecha_salida_bodega:
+            from django.utils import timezone
+            self.fecha_salida_bodega = timezone.now().date()
+            
         super().save(*args, **kwargs)
 
     def __str__(self):

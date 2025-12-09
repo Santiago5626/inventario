@@ -4,19 +4,19 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="fw-bold">Usuarios</h1>
-    <a href="{% url 'usuarios:user_create' %}" class="btn btn-primary">
-        <i class="fas fa-user-plus me-2"></i> Nuevo Usuario
+    <h1 class="fw-bold"><i class="fas fa-users me-2"></i>Gestión de Usuarios</h1>
+    <a href="{% url 'usuarios:user_create' %}" class="btn btn-primary modal-trigger" data-title="Nuevo Usuario">
+        <i class="fas fa-user-plus me-2"></i>Nuevo Usuario
     </a>
 </div>
 
-<div class="card">
+<div class="card shadow-sm">
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover table-striped align-middle mb-0">
-                <thead class="table-dark">
+            <table class="table table-hover align-middle mb-0 table-minimal">
+                <thead>
                     <tr>
-                        <th>Usuario</th>
+                        <th class="ps-4">Usuario</th>
                         <th>Nombre Completo</th>
                         <th>Email</th>
                         <th>Rol</th>
@@ -27,15 +27,11 @@
                 <tbody>
                     {% for user in users %}
                     <tr>
-                        <td class="fw-semibold">{{ user.username }}</td>
+                        <td class="ps-4 fw-semibold">{{ user.username }}</td>
                         <td>{{ user.get_full_name|default:"-" }}</td>
                         <td>{{ user.email|default:"-" }}</td>
                         <td>
-                            {% for group in user.groups.all %}
-                            <span class="badge bg-primary">{{ group.name }}</span>
-                            {% empty %}
-                            <span class="text-muted small">Sin rol</span>
-                            {% endfor %}
+                            <span class="badge bg-primary">{{ user.get_rol_display }}</span>
                         </td>
                         <td>
                             {% if user.is_active %}
@@ -45,12 +41,13 @@
                             {% endif %}
                         </td>
                         <td class="text-center">
-                            <a href="{% url 'usuarios:user_update' user.pk %}" class="btn btn-sm btn-warning me-1"
+                            <a href="{% url 'usuarios:user_update' user.pk %}"
+                                class="btn btn-sm btn-outline-warning me-1 modal-trigger" data-title="Editar Usuario"
                                 title="Editar">
                                 <i class="fas fa-edit"></i>
                             </a>
                             <a href="{% url 'usuarios:user_reset_password' user.pk %}"
-                                class="btn btn-sm btn-info text-white" title="Resetear Contraseña">
+                                class="btn btn-sm btn-outline-info" title="Resetear Contraseña">
                                 <i class="fas fa-key"></i>
                             </a>
                         </td>

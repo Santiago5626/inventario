@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy, reverse
 from django.views.generic import CreateView, DetailView, UpdateView, DeleteView, ListView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 import csv
 import json
 from openpyxl import Workbook
@@ -13,7 +13,7 @@ from django.contrib import messages
 from django.contrib.auth import get_user_model
 from datetime import timedelta
 from .models import Activo, Tranzabilidad, Historial, Zona, Categoria, Marca
-from .forms import ActivoForm
+from .forms import ActivoForm, CategoriaForm
 
 @login_required
 def dashboard_redirect(request):
@@ -24,7 +24,7 @@ def dashboard_redirect(request):
     elif request.user.rol == 'lectura':
         return redirect(reverse('activos:lectura_dashboard'))
     elif request.user.rol == 'asignador':
-        return redirect(reverse('activos:home'))
+        return redirect(reverse('activos:lectura_dashboard'))
     else:
         return redirect(reverse('activos:home'))
 
@@ -92,7 +92,7 @@ def logistica_dashboard(request):
 
 @login_required
 def lectura_dashboard(request):
-    if request.user.rol != 'lectura':
+    if request.user.rol not in ['lectura', 'asignador']:
         return redirect('activos:home')
     total_activos = Activo.objects.count()
     return render(request, 'activos/lectura_dashboard.html', {
@@ -226,6 +226,11 @@ class ActivoCreateView(LoginRequiredMixin, CreateView):
     template_name = 'activos/activo_form.html'
     success_url = reverse_lazy('activos:home')
     
+    def get_template_names(self):
+        if self.request.GET.get('modal'):
+            return ['activos/partials/form_activo.html']
+        return [self.template_name]
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['is_update'] = False
@@ -275,6 +280,11 @@ class ActivoUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'activos/activo_form.html'
     success_url = reverse_lazy('activos:home')
     
+    def get_template_names(self):
+        if self.request.GET.get('modal'):
+            return ['activos/partials/form_activo.html']
+        return [self.template_name]
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['is_update'] = True
@@ -392,6 +402,11 @@ class ActivoAsignarView(LoginRequiredMixin, UpdateView):
     template_name = 'activos/activo_form.html'
     success_url = reverse_lazy('activos:home')
     
+    def get_template_names(self):
+        if self.request.GET.get('modal'):
+            return ['activos/partials/form_activo.html']
+        return [self.template_name]
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['is_update'] = True
@@ -436,7 +451,7 @@ class ActivoDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('activos:home')
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.rol != 'admin':
+        if request.user.rol not in ['admin', 'logistica']:
             messages.error(request, 'No tienes permisos para eliminar activos.')
             return redirect('activos:home')
         return super().dispatch(request, *args, **kwargs)
@@ -457,7 +472,7 @@ class ActivoDeleteView(LoginRequiredMixin, DeleteView):
 @login_required
 def eliminar_multiples_activos(request):
     """Vista para eliminar múltiples activos"""
-    if request.user.rol != 'admin':
+    if request.user.rol not in ['admin', 'logistica']:
         messages.error(request, 'No tienes permisos para eliminar activos.')
         return redirect('activos:home')
     
@@ -810,7 +825,7 @@ class ZonaListView(LoginRequiredMixin, ListView):
     context_object_name = 'zonas'
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.rol != 'admin':
+        if request.user.rol not in ['admin', 'logistica']:
             messages.error(request, 'No tienes permisos para ver zonas.')
             return redirect('activos:home')
         return super().dispatch(request, *args, **kwargs)
@@ -821,8 +836,13 @@ class ZonaCreateView(LoginRequiredMixin, CreateView):
     template_name = 'activos/zona_form.html'
     success_url = reverse_lazy('activos:zona_list')
 
+    def get_template_names(self):
+        if self.request.GET.get('modal'):
+            return ['activos/partials/form_zona.html']
+        return [self.template_name]
+
     def dispatch(self, request, *args, **kwargs):
-        if request.user.rol != 'admin':
+        if request.user.rol not in ['admin', 'logistica']:
             messages.error(request, 'No tienes permisos para crear zonas.')
             return redirect('activos:home')
         return super().dispatch(request, *args, **kwargs)
@@ -833,8 +853,13 @@ class ZonaUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'activos/zona_form.html'
     success_url = reverse_lazy('activos:zona_list')
 
+    def get_template_names(self):
+        if self.request.GET.get('modal'):
+            return ['activos/partials/form_zona.html']
+        return [self.template_name]
+
     def dispatch(self, request, *args, **kwargs):
-        if request.user.rol != 'admin':
+        if request.user.rol not in ['admin', 'logistica']:
             messages.error(request, 'No tienes permisos para editar zonas.')
             return redirect('activos:home')
         return super().dispatch(request, *args, **kwargs)
@@ -845,7 +870,7 @@ class ZonaDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('activos:zona_list')
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.rol != 'admin':
+        if request.user.rol not in ['admin', 'logistica']:
             messages.error(request, 'No tienes permisos para eliminar zonas.')
             return redirect('activos:home')
         return super().dispatch(request, *args, **kwargs)
@@ -859,19 +884,24 @@ class CategoriaListView(LoginRequiredMixin, ListView):
     context_object_name = 'categorias'
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.rol != 'admin':
+        if request.user.rol not in ['admin', 'logistica']:
             messages.error(request, 'No tienes permisos para ver categorías.')
             return redirect('activos:home')
         return super().dispatch(request, *args, **kwargs)
 
 class CategoriaCreateView(LoginRequiredMixin, CreateView):
     model = Categoria
-    fields = ['nombre']
+    form_class = CategoriaForm
     template_name = 'activos/category_form.html'
     success_url = reverse_lazy('activos:categoria_list')
 
+    def get_template_names(self):
+        if self.request.GET.get('modal'):
+            return ['activos/partials/form_categoria.html']
+        return [self.template_name]
+
     def dispatch(self, request, *args, **kwargs):
-        if request.user.rol != 'admin':
+        if request.user.rol not in ['admin', 'logistica']:
             messages.error(request, 'No tienes permisos para crear categorías.')
             return redirect('activos:home')
         return super().dispatch(request, *args, **kwargs)
@@ -895,12 +925,17 @@ class CategoriaCreateView(LoginRequiredMixin, CreateView):
 
 class CategoriaUpdateView(LoginRequiredMixin, UpdateView):
     model = Categoria
-    fields = ['nombre']
+    form_class = CategoriaForm
     template_name = 'activos/category_form.html'
     success_url = reverse_lazy('activos:categoria_list')
 
+    def get_template_names(self):
+        if self.request.GET.get('modal'):
+            return ['activos/partials/form_categoria.html']
+        return [self.template_name]
+
     def dispatch(self, request, *args, **kwargs):
-        if request.user.rol != 'admin':
+        if request.user.rol not in ['admin', 'logistica']:
             messages.error(request, 'No tienes permisos para editar categorías.')
             return redirect('activos:home')
         return super().dispatch(request, *args, **kwargs)
@@ -948,7 +983,7 @@ class CategoriaDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('activos:categoria_list')
 
     def dispatch(self, request, *args, **kwargs):
-        if request.user.rol != 'admin':
+        if request.user.rol not in ['admin', 'logistica']:
             messages.error(request, 'No tienes permisos para eliminar categorías.')
             return redirect('activos:home')
         return super().dispatch(request, *args, **kwargs)

@@ -94,13 +94,16 @@
 </style>
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="fw-bold">Activos</h1>
+    <h1 class="fw-bold"><i class="fas fa-boxes-stacked me-2"></i>Gestión de Activos</h1>
     {% if user.rol == 'admin' or user.rol == 'logistica' %}
-    <a href="{% url 'activos:activo-create' %}" class="btn btn-primary">
+    <a href="{% url 'activos:activo-create' %}" class="btn btn-primary modal-trigger" data-title="Crear Nuevo Activo">
         <i class="fas fa-plus me-2"></i>Nuevo Activo
     </a>
     {% endif %}
 </div>
+
+<!-- CSRF Token para acciones AJAX/JS -->
+{% csrf_token %}
 
 <!-- Formulario de búsqueda -->
 <div class="card mb-4 shadow-sm">
@@ -131,7 +134,7 @@
                 <button type="submit" class="btn btn-primary">
                     <i class="fas fa-search me-2"></i>Buscar
                 </button>
-                <a href="{% url 'activos:home' %}" class="btn btn-secondary">
+                <a href="{% url 'activos:home' %}" class="btn btn-outline-secondary">
                     <i class="fas fa-times me-2"></i>Limpiar
                 </a>
             </div>
@@ -142,8 +145,8 @@
 <div class="card shadow-sm">
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover table-striped mb-0">
-                <thead class="table-dark">
+            <table class="table table-hover mb-0 table-minimal">
+                <thead>
                     <tr>
                         <th class="text-center" style="width: 50px;"></th>
                         <th>DOCUMENTO</th>
@@ -196,7 +199,7 @@
         <i class="fas fa-edit"></i>
     </button>
     {% endif %}
-    {% if user.rol == 'admin' %}
+    {% if user.rol == 'admin' or user.rol == 'logistica' %}
     <button type="button" class="btn btn-danger" id="deleteBtn" title="Eliminar">
         <i class="fas fa-trash"></i>
     </button>
@@ -233,6 +236,17 @@
             checkbox.addEventListener('change', updateActionsBar);
         });
 
+        // Helper para abrir modal simulando click
+        function triggerModal(url, title) {
+            const a = document.createElement('a');
+            a.href = url;
+            a.className = 'modal-trigger';
+            a.setAttribute('data-title', title);
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
         // Asignar
         if (assignBtn) {
             assignBtn.addEventListener('click', function () {
@@ -241,7 +255,7 @@
 
                 if (checked.length === 1) {
                     const pk = checked[0].dataset.pk;
-                    window.location.href = `/activos/${pk}/asignar/`;
+                    triggerModal(`/activos/${pk}/asignar/`, 'Asignar Activo');
                 } else {
                     alert('Por favor selecciona solo un activo para asignar.');
                 }
@@ -255,7 +269,7 @@
                 const checked = Array.from(checkboxes).filter(cb => cb.checked);
                 if (checked.length === 1) {
                     const pk = checked[0].dataset.pk;
-                    window.location.href = `/activos/${pk}/editar/`;
+                    triggerModal(`/activos/${pk}/editar/`, 'Editar Activo');
                 }
             });
         }
@@ -272,10 +286,42 @@
                 if (confirm(message)) {
                     const ids = checked.map(cb => cb.dataset.pk);
                     if (count === 1) {
-                        window.location.href = `/activos/${ids[0]}/eliminar/`;
+                        // Crear formulario dinámico para POST
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = `/activos/${ids[0]}/eliminar/`;
+
+                        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = 'csrfmiddlewaretoken';
+                        csrfInput.value = csrfToken;
+                        form.appendChild(csrfInput);
+
+                        document.body.appendChild(form);
+                        form.submit();
                     } else {
-                        const params = ids.map(id => `ids=${id}`).join('&');
-                        window.location.href = `/activos/eliminar-multiples/?${params}`;
+                        const form = document.createElement('form');
+                        form.method = 'POST';
+                        form.action = "{% url 'activos:activo_delete_multiple' %}";
+
+                        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                        const csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = 'csrfmiddlewaretoken';
+                        csrfInput.value = csrfToken;
+                        form.appendChild(csrfInput);
+
+                        ids.forEach(id => {
+                            const hiddenInput = document.createElement('input');
+                            hiddenInput.type = 'hidden';
+                            hiddenInput.name = 'activos_ids';
+                            hiddenInput.value = id;
+                            form.appendChild(hiddenInput);
+                        });
+
+                        document.body.appendChild(form);
+                        form.submit();
                     }
                 }
             });

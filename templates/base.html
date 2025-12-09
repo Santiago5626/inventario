@@ -10,7 +10,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="{% static 'css/modern.css' %}" rel="stylesheet">
+    <link href="{% static 'css/modern.css' %}?v=1.2" rel="stylesheet">
 </head>
 
 <body>
@@ -18,9 +18,19 @@
     {% if user.is_authenticated %}
     <!-- SIDEBAR -->
     <div class="sidebar">
+        <!-- Botón de cierre para móvil -->
+        <button class="btn d-md-none position-absolute text-white" id="sidebarClose"
+            style="top: 10px; right: 10px; z-index: 1000; background: transparent; border: none;">
+            <i class="fa-solid fa-xmark fa-xl"></i>
+        </button>
 
         <div class="sidebar-title">
-            <i class="fa-solid fa-boxes-stacked"></i> Inventario PDA
+            <i class="fa-solid fa-user-circle"></i>
+            <div style="line-height: normal;">
+                <div style="font-size: 0.95rem;">{{ user.get_full_name|default:user.username|upper }}</div>
+                <div style="font-size: 0.75rem; opacity: 0.7; font-weight: normal;">{{ user.get_rol_display|upper }}
+                </div>
+            </div>
         </div>
 
         <div class="sidebar-menu">
@@ -64,9 +74,21 @@
                 class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
                 <i class="fa-solid fa-mobile-screen-button"></i> Activos
             </a>
+            <a href="{% url 'activos:categoria_list' %}"
+                class="{% if 'categoria' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fa-solid fa-layer-group"></i> Categorías
+            </a>
+            <a href="{% url 'activos:zona_list' %}"
+                class="{% if 'zona' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fa-solid fa-map-marker-alt"></i> Zonas
+            </a>
             <a href="{% url 'activos:tranzabilidad_list' %}"
                 class="{% if 'tranzabilidad' in request.resolver_match.url_name %}active{% endif %}">
                 <i class="fa-solid fa-clock-rotate-left"></i> Tranzabilidad
+            </a>
+            <a href="{% url 'activos:reporte_por_sede' %}"
+                class="{% if 'reporte' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fa-solid fa-file-excel"></i> Reportes
             </a>
             {% endif %}
 
@@ -78,6 +100,24 @@
             <a href="{% url 'activos:home' %}"
                 class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
                 <i class="fa-solid fa-mobile-screen-button"></i> Activos
+            </a>
+            {% endif %}
+            {% if user_is_asignador %}
+            <a href="{% url 'activos:lectura_dashboard' %}"
+                class="{% if request.resolver_match.url_name == 'lectura_dashboard' %}active{% endif %}">
+                <i class="fa-solid fa-chart-pie"></i> Dashboard
+            </a>
+            <a href="{% url 'activos:home' %}"
+                class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                <i class="fa-solid fa-mobile-screen-button"></i> Activos
+            </a>
+            <a href="{% url 'activos:tranzabilidad_list' %}"
+                class="{% if 'tranzabilidad' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fa-solid fa-clock-rotate-left"></i> Tranzabilidad
+            </a>
+            <a href="{% url 'activos:reporte_por_sede' %}"
+                class="{% if 'reporte' in request.resolver_match.url_name %}active{% endif %}">
+                <i class="fa-solid fa-file-excel"></i> Reportes
             </a>
             {% endif %}
         </div>
@@ -100,7 +140,7 @@
     <div class="content">
         <!-- Mobile Menu Button -->
         <button class="btn btn-primary d-md-none mb-3" id="sidebarToggle">
-            <i class="fa-solid fa-bars"></i> Menú
+            <i class="fa-solid fa-bars" id="toggleIcon"></i>
         </button>
 
         {% if messages %}
@@ -119,27 +159,129 @@
     <!-- Overlay for mobile sidebar -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
+    <!-- Main Modal Generic -->
+    <div class="modal fade" id="mainModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold" id="mainModalLabel">Inventario</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div id="mainModalContent" class="modal-body p-4">
+                    <!-- Dynamic Content -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Mobile Sidebar Toggle
         document.addEventListener('DOMContentLoaded', function () {
+            // Mobile Sidebar Toggle
             const sidebar = document.querySelector('.sidebar');
             const sidebarToggle = document.getElementById('sidebarToggle');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
 
+            const toggleIcon = document.getElementById('toggleIcon');
+            const sidebarClose = document.getElementById('sidebarClose');
+
+            function openSidebar() {
+                sidebar.classList.add('active');
+                sidebarOverlay.classList.add('active');
+                if (toggleIcon) {
+                    toggleIcon.classList.remove('fa-bars');
+                    toggleIcon.classList.add('fa-times');
+                }
+            }
+
+            function closeSidebar() {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+                if (toggleIcon) {
+                    toggleIcon.classList.remove('fa-times');
+                    toggleIcon.classList.add('fa-bars');
+                }
+            }
+
             if (sidebarToggle) {
                 sidebarToggle.addEventListener('click', function () {
-                    sidebar.classList.toggle('active');
-                    sidebarOverlay.classList.toggle('active');
+                    if (sidebar.classList.contains('active')) {
+                        closeSidebar();
+                    } else {
+                        openSidebar();
+                    }
                 });
             }
 
-            if (sidebarOverlay) {
-                sidebarOverlay.addEventListener('click', function () {
-                    sidebar.classList.remove('active');
-                    sidebarOverlay.classList.remove('active');
-                });
+            if (sidebarClose) {
+                sidebarClose.addEventListener('click', closeSidebar);
             }
+
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', closeSidebar);
+            }
+
+            // Modal Logic
+            const mainModal = new bootstrap.Modal(document.getElementById('mainModal'));
+            const modalContent = document.getElementById('mainModalContent');
+            const modalTitle = document.getElementById('mainModalLabel');
+
+            document.body.addEventListener('click', function (e) {
+                let target = e.target.closest('.modal-trigger');
+                if (target) {
+                    e.preventDefault();
+                    const url = target.getAttribute('href') || target.getAttribute('data-url');
+                    const title = target.getAttribute('data-title') || 'Inventario';
+
+                    if (url) {
+                        modalTitle.textContent = title;
+                        modalContent.innerHTML = '<div class="p-4 text-center"><div class="spinner-border text-primary" role="status"></div></div>';
+                        mainModal.show();
+
+                        fetch(url + (url.includes('?') ? '&' : '?') + 'modal=true')
+                            .then(response => response.text())
+                            .then(html => {
+                                modalContent.innerHTML = html;
+
+                                // Ejecutar scripts encontrados en el HTML cargado
+                                const scripts = modalContent.querySelectorAll('script');
+                                scripts.forEach(oldScript => {
+                                    const newScript = document.createElement('script');
+                                    Array.from(oldScript.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value));
+                                    newScript.appendChild(document.createTextNode(oldScript.innerHTML));
+                                    oldScript.parentNode.replaceChild(newScript, oldScript);
+                                });
+
+                                // Re-init functionality inside modal if needed
+                                const form = modalContent.querySelector('form');
+                                if (form) {
+                                    form.addEventListener('submit', function (ev) {
+                                        ev.preventDefault();
+                                        const formData = new FormData(form);
+                                        fetch(form.action, {
+                                            method: 'POST',
+                                            body: formData,
+                                            headers: {
+                                                'X-Requested-With': 'XMLHttpRequest'
+                                            }
+                                        })
+                                            .then(res => {
+                                                if (res.ok) {
+                                                    // Check for redirect or success
+                                                    window.location.reload();
+                                                } else {
+                                                    return res.text();
+                                                }
+                                            })
+                                            .then(errHtml => {
+                                                if (errHtml) modalContent.innerHTML = errHtml; // Show errors
+                                            });
+                                    });
+                                }
+                            });
+                    }
+                }
+            });
         });
     </script>
 </body>

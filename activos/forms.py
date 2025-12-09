@@ -3,6 +3,18 @@ from .models import Activo, Zona, Categoria, Marca
 from django.utils import timezone
 
 
+class CategoriaForm(forms.ModelForm):
+    class Meta:
+        model = Categoria
+        fields = ['nombre']
+        widgets = {
+            'nombre': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Nombre de la categoría',
+                'id': 'id_nombre'
+            }),
+        }
+
 class ActivoForm(forms.ModelForm):
     ESTADO_CHOICES_CREATE = [
         ('activo confirmado', 'Activo Confirmado'),
@@ -18,7 +30,15 @@ class ActivoForm(forms.ModelForm):
     CARGO_CHOICES = [
         ('vendedor ambulante', 'Vendedor Ambulante'),
         ('vendedor', 'Vendedor'),
+        ('vendedor tat', 'Vendedor TAT'),
         ('administrativos', 'Administrativos'),
+    ]
+
+    OPERADOR_CHOICES = [
+        ('', 'Seleccione un operador'),
+        ('Tigo', 'Tigo'),
+        ('Movistar', 'Movistar'),
+        ('Claro', 'Claro'),
     ]
     
     class Meta:
@@ -69,7 +89,7 @@ class ActivoForm(forms.ModelForm):
             'imei2': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'IMEI 2'}),
             'sn': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Número de serie'}),
             'iccid': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ICCID', 'id': 'id_iccid'}),
-            'operador': forms.TextInput(attrs={'class': 'form-control', 'readonly': 'readonly', 'id': 'id_operador'}),
+            'operador': forms.Select(attrs={'class': 'form-select', 'id': 'id_operador'}),
             'mac_superflex': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'MAC Superflex'}),
             'activo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del activo'}),
             'punto_venta': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Punto de venta'}),
@@ -91,7 +111,11 @@ class ActivoForm(forms.ModelForm):
         # Configurar choices para cargo
         self.fields['cargo'].widget = forms.Select(attrs={'class': 'form-select'})
         self.fields['cargo'].widget.choices = self.CARGO_CHOICES
+        self.fields['cargo'].widget.choices = self.CARGO_CHOICES
         self.fields['cargo'].initial = 'vendedor ambulante'
+        
+        # Configurar choices para operador
+        self.fields['operador'].widget.choices = self.OPERADOR_CHOICES
         
         # Configurar zona como select con las zonas existentes
         zonas = Zona.objects.all().values_list('nombre', 'nombre')
@@ -116,17 +140,28 @@ class ActivoForm(forms.ModelForm):
         # Hacer obligatorios todos los campos de la sección "Datos del Activo"
         campos_obligatorios = [
             'categoria', 'marca', 'activo', 'sn', 
-            'imei1', 'imei2', 'estado', 'zona', 
-            'responsable', 'identificacion'
+            'estado', 'zona'
         ]
         
         for campo in campos_obligatorios:
             if campo in self.fields:
                 self.fields[campo].required = True
 
-        # Lógica para asignación: bloquear campos que ya tienen valor
+        # Lógica para asignación: bloquear campos fundamentales (identidad del activo)
+        # pero permitir editar campos de asignación (usuario, ubicación, etc.) incluso si ya tienen valor
         if is_assignment and self.instance.pk:
+            # Campos que siempre deben ser editables durante una asignación/reasignación
+            assignment_fields = [
+                'documento', 'nombres_apellidos', 'responsable', 'identificacion',
+                'zona', 'cargo', 'codigo_centro_costo', 'centro_costo_punto',
+                'punto_venta', 'observacion', 'estado'
+            ]
+
             for name, field in self.fields.items():
+                # Si el campo es de asignación, saltar bloqueo (permitir edición)
+                if name in assignment_fields:
+                    continue
+
                 # Obtener valor del campo en la instancia
                 value = getattr(self.instance, name, None)
                 
@@ -137,10 +172,8 @@ class ActivoForm(forms.ModelForm):
                     field.widget.attrs['class'] = field.widget.attrs.get('class', '') + ' bg-light'
                     
                     # Para selects, readonly no funciona igual en HTML, se usa disabled
-                    # pero disabled no envía el valor en el POST, así que necesitamos un campo hidden
+                    # pero disabled no envía el valor en el POST, así que necesitamos simularlo
                     if isinstance(field.widget, forms.Select):
-                        # En este caso simple, usaremos un estilo visual y validación en clean si fuera necesario
-                        # O mejor: pointer-events: none y background gris para simular disabled pero enviar valor
                         field.widget.attrs['style'] = 'pointer-events: none; background-color: #e9ecef;'
                         field.widget.attrs['tabindex'] = '-1'
                         field.widget.attrs['aria-disabled'] = 'true'

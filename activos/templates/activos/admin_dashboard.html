@@ -1,183 +1,217 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard Administrativo{% endblock %}
+{% block title %}Dashboard{% endblock %}
 
 {% block content %}
-
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 mb-0">Dashboard Administrativo</h1>
+    <h1 class="fw-bold"><i class="fas fa-chart-line me-2"></i>Dashboard</h1>
+    <span class="badge bg-light text-dark border p-2 mb-0">
+        <i class="far fa-calendar-alt me-1"></i> {% now "d/m/Y" %}
+    </span>
 </div>
 
-<!-- Tarjetas de resumen -->
+<!-- KPIs / Tarjetas Superiores -->
 <div class="row g-3 mb-4">
     <div class="col-xl-3 col-md-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.75rem;">Total Activos</h6>
-                <h2 class="mb-0">{{ total_activos }}</h2>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.75rem;">Asignados</h6>
-                <h2 class="mb-0">{{ asignados }}</h2>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.75rem;">En Bodega</h6>
-                <h2 class="mb-0">{{ en_bodega }}</h2>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-xl-3 col-md-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <h6 class="text-muted text-uppercase mb-2" style="font-size: 0.75rem;">Dados de Baja</h6>
-                <h2 class="mb-0">{{ dados_baja }}</h2>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Estadísticas principales -->
-<div class="row g-3">
-    <!-- Activos por Zona -->
-    <div class="col-lg-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-0 py-3">
-                <h6 class="mb-0">Top 5 Zonas</h6>
-            </div>
-            <div class="card-body">
-                {% if activos_por_zona %}
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead>
-                            <tr class="text-muted" style="font-size: 0.75rem;">
-                                <th class="border-0">ZONA</th>
-                                <th class="border-0 text-end">CANTIDAD</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in activos_por_zona %}
-                            <tr>
-                                <td>{{ item.zona|default:"Sin zona" }}</td>
-                                <td class="text-end">{{ item.total }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <p class="text-muted mb-0">No hay datos disponibles</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Activos por Categoría -->
-    <div class="col-lg-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-0 py-3">
-                <h6 class="mb-0">Activos por Categoría</h6>
-            </div>
-            <div class="card-body">
-                {% if activos_por_categoria %}
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead>
-                            <tr class="text-muted" style="font-size: 0.75rem;">
-                                <th class="border-0">CATEGORÍA</th>
-                                <th class="border-0 text-end">CANTIDAD</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in activos_por_categoria %}
-                            <tr>
-                                <td>{{ item.categoria__nombre }}</td>
-                                <td class="text-end">{{ item.total }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <p class="text-muted mb-0">No hay datos disponibles</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Distribución por Estado -->
-    <div class="col-lg-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-0 py-3">
-                <h6 class="mb-0">Distribución por Estado</h6>
-            </div>
-            <div class="card-body">
-                {% if activos_por_estado %}
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead>
-                            <tr class="text-muted" style="font-size: 0.75rem;">
-                                <th class="border-0">ESTADO</th>
-                                <th class="border-0 text-end">CANTIDAD</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in activos_por_estado %}
-                            <tr>
-                                <td>{{ item.estado|title }}</td>
-                                <td class="text-end">{{ item.total }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <p class="text-muted mb-0">No hay datos disponibles</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- Últimos Activos Registrados -->
-    <div class="col-lg-6">
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white border-0 py-3">
-                <h6 class="mb-0">Últimos Activos Registrados</h6>
-            </div>
-            <div class="card-body">
-                {% if ultimos_activos %}
-                <div class="list-group list-group-flush">
-                    {% for activo in ultimos_activos %}
-                    <div class="list-group-item px-0 border-0 border-bottom">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="mb-1">{{ activo.activo }}</div>
-                                <small class="text-muted">
-                                    {{ activo.fecha_creacion|date:"d/m/Y H:i" }}
-                                </small>
-                            </div>
-                            <span class="badge bg-secondary">{{ activo.estado }}</span>
-                        </div>
+        <div class="card border-0 shadow-sm h-100 overflow-hidden">
+            <div class="card-body position-relative">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-uppercase text-muted fw-bold small mb-0">Total Activos</h6>
+                    <div class="icon-shape bg-primary text-white rounded-circle shadow-sm"
+                        style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-cubes"></i>
                     </div>
-                    {% endfor %}
                 </div>
-                {% else %}
-                <p class="text-muted mb-0">No hay activos registrados</p>
-                {% endif %}
+                <h2 class="mb-0 fw-bold text-dark">{{ total_activos }}</h2>
+                <div class="small text-muted mt-2">Inventario total</div>
+                <!-- Decoración de fondo -->
+                <i class="fas fa-cubes position-absolute text-primary opacity-10"
+                    style="font-size: 5rem; bottom: -1rem; right: -1rem; transform: rotate(-15deg);"></i>
             </div>
         </div>
     </div>
 
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm h-100 overflow-hidden">
+            <div class="card-body position-relative">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-uppercase text-muted fw-bold small mb-0">Asignados</h6>
+                    <div class="icon-shape bg-success text-white rounded-circle shadow-sm"
+                        style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                </div>
+                <h2 class="mb-0 fw-bold text-success">{{ asignados }}</h2>
+                <div class="small text-muted mt-2">En uso actualmente</div>
+                <i class="fas fa-user-check position-absolute text-success opacity-10"
+                    style="font-size: 5rem; bottom: -1rem; right: -1rem; transform: rotate(-15deg);"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm h-100 overflow-hidden">
+            <div class="card-body position-relative">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-uppercase text-muted fw-bold small mb-0">En Bodega</h6>
+                    <div class="icon-shape bg-warning text-white rounded-circle shadow-sm"
+                        style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-warehouse"></i>
+                    </div>
+                </div>
+                <h2 class="mb-0 fw-bold text-warning">{{ en_bodega }}</h2>
+                <div class="small text-muted mt-2">Disponibles para asignar</div>
+                <i class="fas fa-box position-absolute text-warning opacity-10"
+                    style="font-size: 5rem; bottom: -1rem; right: -1rem; transform: rotate(-15deg);"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm h-100 overflow-hidden">
+            <div class="card-body position-relative">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="text-uppercase text-muted fw-bold small mb-0">Dados de Baja</h6>
+                    <div class="icon-shape bg-danger text-white rounded-circle shadow-sm"
+                        style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                </div>
+                <h2 class="mb-0 fw-bold text-danger">{{ dados_baja }}</h2>
+                <div class="small text-muted mt-2">Retirados del inventario</div>
+                <i class="fas fa-trash position-absolute text-danger opacity-10"
+                    style="font-size: 5rem; bottom: -1rem; right: -1rem; transform: rotate(-15deg);"></i>
+            </div>
+        </div>
+    </div>
 </div>
 
+<!-- Gráficos Principales -->
+<div class="row g-4 mb-4">
+    <!-- Gráfico 1: Estado y Operadores -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold">Distribución por Estado</h6>
+                <button class="btn btn-sm btn-light rounded-circle" type="button"><i
+                        class="fas fa-ellipsis-h"></i></button>
+            </div>
+            <div class="card-body d-flex flex-column justify-content-center align-items-center position-relative">
+                <div style="height: 250px; width: 100%;">
+                    <canvas id="estadoChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gráfico 2: Categorías (Barras) -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0 fw-bold">Activos por Categoría</h6>
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-light rounded-circle" type="button"><i
+                            class="fas fa-ellipsis-v"></i></button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px; width: 100%;">
+                    <canvas id="categoriaChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Últimos Activos -->
+
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const colors = {
+            primary: '#3B82F6',
+            success: '#10B981',
+            warning: '#F59E0B',
+            danger: '#EF4444',
+            info: '#6366F1',
+            purple: '#8B5CF6',
+            gray: '#9CA3AF',
+            grid: '#F3F4F6'
+        };
+
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: {
+                        color: colors.grid,
+                        drawBorder: false
+                    }
+                },
+                x: {
+                    grid: {
+                        display: false
+                    }
+                }
+            }
+        };
+
+        // 1. Gráfico de Estado (Doughnut)
+        const ctxEstado = document.getElementById('estadoChart').getContext('2d');
+        new Chart(ctxEstado, {
+            type: 'doughnut',
+            data: {
+                labels: [{% for item in activos_por_estado %}"{{ item.estado|title|escapejs }}",{% endfor %}],
+        datasets: [{
+            data: [{% for item in activos_por_estado %}{{ item.total }}, {% endfor %}],
+        backgroundColor: [colors.success, colors.warning, colors.danger, colors.primary, colors.purple],
+        borderWidth: 0,
+        hoverOffset: 4
+                }]
+            },
+        options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'bottom', labels: { usePointStyle: true } }
+        },
+        cutout: '70%'
+    }
+        });
+
+    // 2. Gráfico de Categorías (Bar)
+    const ctxCategoria = document.getElementById('categoriaChart').getContext('2d');
+    new Chart(ctxCategoria, {
+        type: 'bar',
+        data: {
+            labels: [{% for item in activos_por_categoria %}"{{ item.categoria__nombre|default:'Sin Categoría'|truncatechars:15|escapejs }}",{% endfor %}],
+        datasets: [{
+            label: 'Cantidad',
+            data: [{% for item in activos_por_categoria %}{{ item.total }}, {% endfor %}],
+        backgroundColor: colors.primary,
+        borderRadius: 4,
+        barThickness: 30
+        }]
+    },
+        options: chartOptions
+});
+
+});
+</script>
 {% endblock %}

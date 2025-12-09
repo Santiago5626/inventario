@@ -41,6 +41,10 @@ def user_create(request):
             return redirect('usuarios:user_list')
     else:
         form = UserForm()
+    
+    if request.GET.get('modal'):
+        return render(request, 'usuarios/partials/form_user.html', {'form': form})
+        
     return render(request, 'usuarios/user_form.html', {'form': form})
 
 @login_required
@@ -57,6 +61,10 @@ def user_update(request, pk):
             return redirect('usuarios:user_list')
     else:
         form = UserForm(instance=user)
+        
+    if request.GET.get('modal'):
+        return render(request, 'usuarios/partials/form_user.html', {'form': form})
+        
     return render(request, 'usuarios/user_form.html', {'form': form})
 
 @login_required
