@@ -83,9 +83,33 @@ def admin_dashboard(request):
 def logistica_dashboard(request):
     if request.user.rol != 'logistica':
         return redirect('activos:home')
-    activos_por_estado = Activo.objects.values('estado').annotate(count=models.Count('estado'))
+    
+    # Estadísticas generales (Misma lógica que admin)
+    total_activos = Activo.objects.count()
+    asignados = Activo.objects.filter(estado__icontains='asignado').count()
+    en_bodega = Activo.objects.filter(estado__icontains='confirmado').count()
+    dados_baja = Activo.objects.filter(estado__icontains='baja').count()
+    
+    # Activos por categoría
+    from django.db.models import Count
+    activos_por_categoria = Activo.objects.values('categoria__nombre').annotate(
+        total=Count('item')
+    ).order_by('-total')
+    
+    # Activos por estado
+    activos_por_estado = Activo.objects.values('estado').annotate(
+        total=Count('item')
+    ).order_by('-total')
+
+    # Tranzabilidad (Exclusivo de logistica, mantenemos esto)
     movimientos_recientes = Tranzabilidad.objects.order_by('-fecha')[:10]
+
     return render(request, 'activos/logistica_dashboard.html', {
+        'total_activos': total_activos,
+        'asignados': asignados,
+        'en_bodega': en_bodega,
+        'dados_baja': dados_baja,
+        'activos_por_categoria': activos_por_categoria,
         'activos_por_estado': activos_por_estado,
         'movimientos_recientes': movimientos_recientes,
     })
@@ -94,9 +118,30 @@ def logistica_dashboard(request):
 def lectura_dashboard(request):
     if request.user.rol not in ['lectura', 'asignador']:
         return redirect('activos:home')
+    
+    # Estadísticas generales
     total_activos = Activo.objects.count()
+    asignados = Activo.objects.filter(estado__icontains='asignado').count()
+    en_bodega = Activo.objects.filter(estado__icontains='confirmado').count()
+    dados_baja = Activo.objects.filter(estado__icontains='baja').count()
+    
+    # Gráficos básicos para visualización
+    from django.db.models import Count
+    activos_por_categoria = Activo.objects.values('categoria__nombre').annotate(
+        total=Count('item')
+    ).order_by('-total')
+    
+    activos_por_estado = Activo.objects.values('estado').annotate(
+        total=Count('item')
+    ).order_by('-total')
+
     return render(request, 'activos/lectura_dashboard.html', {
         'total_activos': total_activos,
+        'asignados': asignados,
+        'en_bodega': en_bodega,
+        'dados_baja': dados_baja,
+        'activos_por_categoria': activos_por_categoria,
+        'activos_por_estado': activos_por_estado,
     })
 
 class ActivoListView(LoginRequiredMixin, ListView):

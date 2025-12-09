@@ -37,7 +37,7 @@
             {% if user_is_admin %}
             <a href="{% url 'activos:admin_dashboard' %}"
                 class="{% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
-                <i class="fa-solid fa-chart-line"></i> Dashboard
+                <i class="fa-solid fa-chart-pie"></i> Dashboard
             </a>
             <a href="{% url 'activos:home' %}"
                 class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
