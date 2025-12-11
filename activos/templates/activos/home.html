@@ -132,12 +132,19 @@
                 <input type="text" class="form-control" id="sn" name="sn" placeholder="Buscar por S/N"
                     value="{{ filtro_sn }}">
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <label for="activo" class="form-label fw-semibold">
                     <i class="fas fa-box me-1"></i>Activo
                 </label>
                 <input type="text" class="form-control" id="activo" name="activo" placeholder="Buscar por activo"
                     value="{{ filtro_activo }}">
+            </div>
+            <div class="col-md-3">
+                <label for="imei" class="form-label fw-semibold">
+                    <i class="fas fa-mobile-alt me-1"></i>IMEI
+                </label>
+                <input type="text" class="form-control" id="imei" name="imei" placeholder="Buscar por IMEI"
+                    value="{{ filtro_imei }}">
             </div>
             <div class="col-12">
                 <button type="submit" class="btn btn-primary">

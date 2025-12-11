@@ -169,6 +169,13 @@ class ActivoListView(LoginRequiredMixin, ListView):
         activo = self.request.GET.get('activo', '').strip()
         if activo:
             queryset = queryset.filter(activo__icontains=activo)
+
+        # Filtro por IMEI (nuevo)
+        imei = self.request.GET.get('imei', '').strip()
+        if imei:
+            queryset = queryset.filter(
+                Q(imei1__icontains=imei) | Q(imei2__icontains=imei)
+            )
         
         return queryset
     
@@ -178,6 +185,7 @@ class ActivoListView(LoginRequiredMixin, ListView):
         context['filtro_documento'] = self.request.GET.get('documento', '')
         context['filtro_sn'] = self.request.GET.get('sn', '')
         context['filtro_activo'] = self.request.GET.get('activo', '')
+        context['filtro_imei'] = self.request.GET.get('imei', '')
         return context
 
 
@@ -875,7 +883,16 @@ class TranzabilidadListView(LoginRequiredMixin, ListView):
             queryset = queryset.filter(
                 Q(activo__activo__icontains=activo_query) |
                 Q(activo__sn__icontains=activo_query) |
-                Q(activo__item__icontains=activo_query)
+                Q(activo__item__icontains=activo_query) |
+                Q(activo__documento__icontains=activo_query)
+            )
+
+        # Filtro especifico por IMEI (busca en imei1 o imei2)
+        imei = self.request.GET.get('imei')
+        if imei:
+            queryset = queryset.filter(
+                Q(activo__imei1__icontains=imei) |
+                Q(activo__imei2__icontains=imei)
             )
         
         return queryset
@@ -895,6 +912,7 @@ class TranzabilidadListView(LoginRequiredMixin, ListView):
         context['filtro_fecha_fin'] = self.request.GET.get('fecha_fin', '')
         context['filtro_usuario'] = self.request.GET.get('usuario', '')
         context['filtro_activo'] = self.request.GET.get('activo', '')
+        context['filtro_imei'] = self.request.GET.get('imei', '')
         
         # Historial de cambios por movimiento (para el modal)
         # Optimizacion: Evitar consultas N+1 cargando historiales relevantes en memoria o filtrando
