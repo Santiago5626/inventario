@@ -443,6 +443,11 @@ def importar_activos(request):
                         cargo = str(row[11]).strip() if row[11] else "vendedor ambulante"
                         estado = str(row[12]).strip() if row[12] else "activo confirmado"
                         
+                        # Si tiene nombres y apellidos (vendedor asignado) y el estado es confirmado,
+                        # cambiar automáticamente a asignado.
+                        if nombres and estado.lower() == 'activo confirmado':
+                            estado = 'asignado'
+                        
                         responsable = str(row[14]).strip() if row[14] else None
                         identificacion = safe_str(row[15])
                         observacion = str(row[18]).strip() if row[18] else "Importado masivamente"
