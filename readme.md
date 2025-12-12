@@ -105,7 +105,7 @@ gunicorn inventario_pda.wsgi:application --bind 0.0.0.0:$PORT
 - **Backend:** Django 5.x
 - **Frontend:** Bootstrap 5, FontAwesome 6, Modern CSS (Custom)
 - **Visualización:** Chart.js
-- **Base de Datos:** SQLite (Dev/Prod simple)
+- **Base de Datos:** PostgresSQL
 - **Servidor:** Gunicorn
 
 ---
