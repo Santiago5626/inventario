@@ -1,28 +1,28 @@
-# 📦 Sistema de Inventario de Activos PDA
+# Sistema de Inventario de Activos PDA
 
 ![Django](https://img.shields.io/badge/Django-5.2-092E20?style=for-the-badge&logo=django&logoColor=white)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5-563D7C?style=for-the-badge&logo=bootstrap&logoColor=white)
-![SQLite](https://img.shields.io/badge/SQLite-07405E?style=for-the-badge&logo=sqlite&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
 
 Sistema web responsive para la gestión y control de inventario de equipos PDA. Diseñado para optimizar el registro, asignación y seguimiento de activos tecnológicos, garantizando una trazabilidad completa mediante roles de usuario y registros de auditoría.
 
 ---
 
-## 🚀 Características Principales
+## Características Principales
 
-### 🔐 Gestión de Accesos y Roles
+### Gestión de Accesos y Roles
 El sistema adapta su interfaz según el perfil del usuario autenticado:
 - **Administrador**: Control total del sistema (CRUD de activos, usuarios, reportes).
 - **Logística**: Gestión de movimientos de inventario y estados.
 - **Lectura/Asignador**: Vistas de consulta y reportes básicos.
 
-### 📊 Dashboards Interactivos
+### Dashboards Interactivos
 Paneles de control modernos con estadísticas en tiempo real:
 - **KPIs**: Total de activos, asignados, en bodega y bajas.
 - **Gráficos**: Distribución por estado y categorías (Chart.js).
 - **Alertas**: Notificaciones visuales de acciones y estados.
 
-### 🛠 Funcionalidades Core
+### Funcionalidades Core
 - **Registro de Activos**: Formulario detallado con validaciones.
 - **Trazabilidad Completa**: Historial cronológico de cambios de estado, ubicación y responsable.
 - **Auditoría**: Registro automático de quién modificó qué y cuándo.
@@ -31,7 +31,7 @@ Paneles de control modernos con estadísticas en tiempo real:
 
 ---
 
-## 📂 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```text
 inventario_pda/
@@ -43,17 +43,17 @@ inventario_pda/
 ├── usuarios/               # Gestión de autenticación y perfiles
 ├── static/                 # Recursos frontend (Modern CSS, JS, imágenes)
 ├── templates/              # Plantillas base y componentes globales
-├── db.sqlite3              # Base de datos local
 └── manage.py               # CLI de Django
 ```
 
 ---
 
-## 💻 Instalación y Despliegue
+## Instalación y Despliegue
 
 ### Requisitos Previos
 - Python 3.10+
 - Git
+- PostgreSQL
 
 ### Configuración Local
 
@@ -71,6 +71,7 @@ inventario_pda/
    ```
 
 3. **Configurar base de datos:**
+   Asegúrate de tener una instancia de PostgreSQL corriendo y configura las variables de entorno necesarias.
    ```bash
    python manage.py migrate
    python manage.py createsuperuser
@@ -84,7 +85,7 @@ inventario_pda/
 
 ---
 
-## ☁️ Despliegue (Render)
+## Despliegue (Render)
 
 El proyecto está configurado para despliegue automático en Render mediante `render.yaml`.
 
@@ -100,14 +101,14 @@ gunicorn inventario_pda.wsgi:application --bind 0.0.0.0:$PORT
 
 ---
 
-## 🎨 Tecnologías
+## Tecnologías
 
 - **Backend:** Django 5.x
 - **Frontend:** Bootstrap 5, FontAwesome 6, Modern CSS (Custom)
 - **Visualización:** Chart.js
-- **Base de Datos:** PostgresSQL
+- **Base de Datos:** PostgreSQL
 - **Servidor:** Gunicorn
 
 ---
 
-Desarrollado para optimizar la gestión de recursos tecnológicos. 
+Desarrollado para optimizar la gestión de recursos tecnológicos.
