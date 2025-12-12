@@ -37,7 +37,11 @@ def admin_dashboard(request):
     
     # Estadísticas generales
     total_activos = Activo.objects.count()
-    asignados = Activo.objects.filter(estado__icontains='asignado').count()
+    # Asignados: Estado "asignado" O tener nombres y apellidos registrados
+    asignados = Activo.objects.filter(
+        Q(estado__icontains='asignado') | 
+        (Q(nombres_apellidos__isnull=False) & ~Q(nombres_apellidos=''))
+    ).distinct().count()
     en_bodega = Activo.objects.filter(estado__icontains='confirmado').count()
     dados_baja = Activo.objects.filter(estado__icontains='baja').count()
     
@@ -88,7 +92,11 @@ def logistica_dashboard(request):
     
     # Estadísticas generales (Misma lógica que admin)
     total_activos = Activo.objects.count()
-    asignados = Activo.objects.filter(estado__icontains='asignado').count()
+    # Asignados: Estado "asignado" O tener nombres y apellidos registrados
+    asignados = Activo.objects.filter(
+        Q(estado__icontains='asignado') | 
+        (Q(nombres_apellidos__isnull=False) & ~Q(nombres_apellidos=''))
+    ).distinct().count()
     en_bodega = Activo.objects.filter(estado__icontains='confirmado').count()
     dados_baja = Activo.objects.filter(estado__icontains='baja').count()
     
@@ -123,7 +131,11 @@ def lectura_dashboard(request):
     
     # Estadísticas generales
     total_activos = Activo.objects.count()
-    asignados = Activo.objects.filter(estado__icontains='asignado').count()
+    # Asignados: Estado "asignado" O tener nombres y apellidos registrados
+    asignados = Activo.objects.filter(
+        Q(estado__icontains='asignado') | 
+        (Q(nombres_apellidos__isnull=False) & ~Q(nombres_apellidos=''))
+    ).distinct().count()
     en_bodega = Activo.objects.filter(estado__icontains='confirmado').count()
     dados_baja = Activo.objects.filter(estado__icontains='baja').count()
     
