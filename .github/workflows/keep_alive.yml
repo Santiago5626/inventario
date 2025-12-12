@@ -6,8 +6,8 @@ on:
     # Colombia UTC-5 convertido a UTC:
     # 6 AM Colombia = 11 AM UTC
     # 10 PM Colombia = 3 AM UTC (del día siguiente)
-    - cron: '*/12 11-23 * * *'  # De 6 AM a 6:59 PM (Colombia)
-    - cron: '*/12 0-3 * * *'    # De 7 PM a 10:59 PM (Colombia)
+    - cron: '*/8 11-23 * * *'  # De 6 AM a 6:59 PM (Colombia)
+    - cron: '*/8 0-3 * * *'    # De 7 PM a 10:59 PM (Colombia)
   workflow_dispatch: # Permite ejecutar manualmente desde GitHub
 
 jobs:
