@@ -1,8 +1,8 @@
 services:
   - type: web
     name: inventario-pda
-    runtime: python3
-    buildCommand: "pip install -r requirements.txt"
+    runtime: python
+    buildCommand: "./build.sh"
     startCommand: "gunicorn inventario_pda.wsgi:application --bind 0.0.0.0:$PORT"
     envVars:
       - key: DJANGO_SETTINGS_MODULE
