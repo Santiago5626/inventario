@@ -100,8 +100,8 @@ class Activo(models.Model):
                 self.operador = operador_detectado
         
         # Lógica para establecer fecha de salida de bodega
-        # Si tiene responsable/asignado y no tiene fecha, establecer la fecha actual
-        if (self.responsable or self.estado == 'asignado') and not self.fecha_salida_bodega:
+        # Si tiene responsable/asignado o tiene nombres y apellidos (asignado a persona), establecer la fecha actual
+        if (self.responsable or self.nombres_apellidos or self.estado == 'asignado') and not self.fecha_salida_bodega:
             from django.utils import timezone
             self.fecha_salida_bodega = timezone.now().date()
             
