@@ -17,6 +17,10 @@ from .models import Activo, Tranzabilidad, Historial, Zona, Categoria, Marca
 from .forms import ActivoForm, CategoriaForm, ImportarActivosForm
 import openpyxl
 
+
+def ping(request):
+    return HttpResponse("pong", content_type="text/plain")
+
 @login_required
 def dashboard_redirect(request):
     if request.user.is_superuser or request.user.rol == 'admin':

@@ -35,7 +35,7 @@ class ActivoForm(forms.ModelForm):
     
     CARGO_CHOICES = [
         ('vendedor ambulante', 'Vendedor Ambulante'),
-        ('vendedor', 'Vendedor'),
+        ('recaudador', 'Recaudador'),
         ('vendedor tat', 'Vendedor TAT'),
         ('administrativos', 'Administrativos'),
     ]

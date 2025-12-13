@@ -209,9 +209,16 @@
 
 <!-- Barra de acciones flotante -->
 <div class="actions-bar" id="actionsBar">
+    {% if user.rol != 'lectura' %}
     <button type="button" class="btn btn-primary" id="assignBtn" title="Asignar">
         <i class="fas fa-user-plus"></i>
     </button>
+    {% endif %}
+
+    <button type="button" class="btn btn-info text-white" id="viewBtn" title="Ver Detalles">
+        <i class="fas fa-eye"></i>
+    </button>
+
     {% if user.rol == 'admin' or user.rol == 'logistica' %}
     <button type="button" class="btn btn-warning" id="editBtn" title="Editar" disabled>
         <i class="fas fa-edit"></i>
@@ -229,6 +236,7 @@
         const checkboxes = document.querySelectorAll('.activo-checkbox');
         const actionsBar = document.getElementById('actionsBar');
         const assignBtn = document.getElementById('assignBtn');
+        const viewBtn = document.getElementById('viewBtn');
         const editBtn = document.getElementById('editBtn');
         const deleteBtn = document.getElementById('deleteBtn');
 
@@ -239,11 +247,17 @@
             if (count > 0) {
                 actionsBar.classList.add('show');
 
-                // Habilitar/deshabilitar botón de editar según cantidad seleccionada
+                // Habilitar/deshabilitar según cantidad seleccionada
                 if (editBtn) {
                     editBtn.disabled = count !== 1;
                     editBtn.style.opacity = count === 1 ? '1' : '0.5';
                     editBtn.style.cursor = count === 1 ? 'pointer' : 'not-allowed';
+                }
+
+                if (viewBtn) {
+                    viewBtn.disabled = count !== 1;
+                    viewBtn.style.opacity = count === 1 ? '1' : '0.5';
+                    viewBtn.style.cursor = count === 1 ? 'pointer' : 'not-allowed';
                 }
             } else {
                 actionsBar.classList.remove('show');
@@ -253,6 +267,19 @@
         checkboxes.forEach(checkbox => {
             checkbox.addEventListener('change', updateActionsBar);
         });
+
+        // Ver Detalles
+        if (viewBtn) {
+            viewBtn.addEventListener('click', function () {
+                if (this.disabled) return;
+                const checked = Array.from(checkboxes).filter(cb => cb.checked);
+                if (checked.length === 1) {
+                    const pk = checked[0].dataset.pk;
+                    // Redirigir a la vista de detalle
+                    window.location.href = `/activos/${pk}/`;
+                }
+            });
+        }
 
         // Helper para abrir modal simulando click
         function triggerModal(url, title) {

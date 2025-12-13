@@ -187,15 +187,28 @@
             {% endfor %} \
         ]');
 
+        // Mapeo seguro de colores por estado (normalizado a minúsculas)
+        const getStatusColor = (status) => {
+            const s = (status || '').toLowerCase().trim();
+            if (s.includes('baja')) return colors.danger; // Rojo
+            if (s.includes('bodega') || s.includes('confirmado')) return colors.warning; // Amarillo
+            if (s.includes('asignado')) return colors.success; // Verde
+            return colors.primary; // Por defecto azul
+        };
+
+        const estadoLabels = estadoData.map(d => d.label);
+        const estadoValues = estadoData.map(d => d.value);
+        const estadoColors = estadoLabels.map(label => getStatusColor(label));
+
         // 1. Gráfico de Estado (Doughnut)
         const ctxEstado = document.getElementById('estadoChart').getContext('2d');
         new Chart(ctxEstado, {
             type: 'doughnut',
             data: {
-                labels: estadoData.map(d => d.label),
+                labels: estadoLabels,
                 datasets: [{
-                    data: estadoData.map(d => d.value),
-                    backgroundColor: [colors.success, colors.warning, colors.danger, colors.primary, colors.purple],
+                    data: estadoValues,
+                    backgroundColor: estadoColors,
                     borderWidth: 0,
                     hoverOffset: 4
                 }]

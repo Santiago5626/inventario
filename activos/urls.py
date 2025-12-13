@@ -5,6 +5,7 @@ app_name = 'activos'
 # Configuración de URLs para Activos
 
 urlpatterns = [
+    path('ping/', views.ping, name='ping'),
     path('', views.ActivoListView.as_view(), name='home'),
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('logistica-dashboard/', views.logistica_dashboard, name='logistica_dashboard'),

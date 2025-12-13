@@ -174,26 +174,40 @@
 
         // 1. Gráfico de Estado (Doughnut)
         const ctxEstado = document.getElementById('estadoChart').getContext('2d');
-        new Chart(ctxEstado, {
-            type: 'doughnut',
-            data: {
-                labels: [{% for item in activos_por_estado %}"{{ item.estado|title|escapejs }}",{% endfor %}],
-        datasets: [{
-            data: [{% for item in activos_por_estado %}{{ item.total }}, {% endfor %}],
-        backgroundColor: [colors.success, colors.warning, colors.danger, colors.primary, colors.purple],
-        borderWidth: 0,
-        hoverOffset: 4
-                }]
-            },
-        options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { position: 'bottom', labels: { usePointStyle: true } }
+
+        // Mapeo seguro de colores por estado (normalizado a minúsculas)
+        const getStatusColor = (status) => {
+            const s = (status || '').toLowerCase().trim();
+            if (s.includes('baja')) return colors.danger; // Rojo
+            if (s.includes('bodega') || s.includes('confirmado')) return colors.warning; // Amarillo
+            if (s.includes('asignado')) return colors.success; // Verde
+            return colors.primary; // Por defecto azul
+        };
+
+        const estadoLabels = [{% for item in activos_por_estado %}"{{ item.estado|title|escapejs }}", {% endfor %}];
+    const estadoValues = [{% for item in activos_por_estado %}{ { item.total } }, {% endfor %}];
+    const estadoColors = estadoLabels.map(label => getStatusColor(label));
+
+    new Chart(ctxEstado, {
+        type: 'doughnut',
+        data: {
+            labels: estadoLabels,
+            datasets: [{
+                data: estadoValues,
+                backgroundColor: estadoColors,
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
         },
-        cutout: '70%'
-    }
-        });
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { usePointStyle: true } }
+            },
+            cutout: '70%'
+        }
+    });
 
     // 2. Gráfico de Categorías (Bar)
     const ctxCategoria = document.getElementById('categoriaChart').getContext('2d');
@@ -207,10 +221,10 @@
         backgroundColor: colors.primary,
         borderRadius: 4,
         barThickness: 30
-        }]
-    },
+            }]
+        },
         options: chartOptions
-});
+    });
 
 });
 </script>
