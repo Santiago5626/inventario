@@ -41,13 +41,20 @@ def admin_dashboard(request):
     
     # Estadísticas generales
     total_activos = Activo.objects.count()
-    # Asignados: Estado "asignado" O tener nombres y apellidos registrados
-    asignados = Activo.objects.filter(
-        Q(estado__icontains='asignado') | 
-        (Q(nombres_apellidos__isnull=False) & ~Q(nombres_apellidos=''))
-    ).distinct().count()
-    en_bodega = Activo.objects.filter(estado__icontains='confirmado').count()
-    dados_baja = Activo.objects.filter(estado__icontains='baja').count()
+    # Definitions for mutual exclusivity
+    baja_query = Q(estado__icontains='baja')
+    asignado_query = Q(estado__icontains='asignado') | (Q(nombres_apellidos__isnull=False) & ~Q(nombres_apellidos=''))
+    confirmado_query = Q(estado__icontains='confirmado')
+
+    # 1. Dados de Baja: Matches 'baja'
+    dados_baja = Activo.objects.filter(baja_query).count()
+
+    # 2. Asignados: Matches asignado condition AND NOT baja
+    asignados = Activo.objects.filter(asignado_query).exclude(baja_query).distinct().count()
+
+    # 3. En Bodega: Matches 'confirmado' AND NOT (asignado OR baja)
+    # Note: 'confirmado' should not overlap with 'baja', but might overlap with 'asignado_query' (if name is present)
+    en_bodega = Activo.objects.filter(confirmado_query).exclude(asignado_query).exclude(baja_query).count()
     
     # Activos por zona
     from django.db.models import Count
@@ -96,13 +103,19 @@ def logistica_dashboard(request):
     
     # Estadísticas generales (Misma lógica que admin)
     total_activos = Activo.objects.count()
-    # Asignados: Estado "asignado" O tener nombres y apellidos registrados
-    asignados = Activo.objects.filter(
-        Q(estado__icontains='asignado') | 
-        (Q(nombres_apellidos__isnull=False) & ~Q(nombres_apellidos=''))
-    ).distinct().count()
-    en_bodega = Activo.objects.filter(estado__icontains='confirmado').count()
-    dados_baja = Activo.objects.filter(estado__icontains='baja').count()
+    # Definitions for mutual exclusivity
+    baja_query = Q(estado__icontains='baja')
+    asignado_query = Q(estado__icontains='asignado') | (Q(nombres_apellidos__isnull=False) & ~Q(nombres_apellidos=''))
+    confirmado_query = Q(estado__icontains='confirmado')
+
+    # 1. Dados de Baja
+    dados_baja = Activo.objects.filter(baja_query).count()
+
+    # 2. Asignados: Exclude baja
+    asignados = Activo.objects.filter(asignado_query).exclude(baja_query).distinct().count()
+
+    # 3. En Bodega: Exclude asignado and baja
+    en_bodega = Activo.objects.filter(confirmado_query).exclude(asignado_query).exclude(baja_query).count()
     
     # Activos por categoría
     from django.db.models import Count
@@ -135,13 +148,14 @@ def lectura_dashboard(request):
     
     # Estadísticas generales
     total_activos = Activo.objects.count()
-    # Asignados: Estado "asignado" O tener nombres y apellidos registrados
-    asignados = Activo.objects.filter(
-        Q(estado__icontains='asignado') | 
-        (Q(nombres_apellidos__isnull=False) & ~Q(nombres_apellidos=''))
-    ).distinct().count()
-    en_bodega = Activo.objects.filter(estado__icontains='confirmado').count()
-    dados_baja = Activo.objects.filter(estado__icontains='baja').count()
+    # Definitions for mutual exclusivity
+    baja_query = Q(estado__icontains='baja')
+    asignado_query = Q(estado__icontains='asignado') | (Q(nombres_apellidos__isnull=False) & ~Q(nombres_apellidos=''))
+    confirmado_query = Q(estado__icontains='confirmado')
+
+    dados_baja = Activo.objects.filter(baja_query).count()
+    asignados = Activo.objects.filter(asignado_query).exclude(baja_query).distinct().count()
+    en_bodega = Activo.objects.filter(confirmado_query).exclude(asignado_query).exclude(baja_query).count()
     
     # Gráficos básicos para visualización
     from django.db.models import Count
