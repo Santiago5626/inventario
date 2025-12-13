@@ -184,7 +184,7 @@
                         <td>{{ activo.nombres_apellidos|default:"-" }}</td>
                         <td>{{ activo.sn|default:"-" }}</td>
                         <td>{{ activo.imei1|default:"-" }}</td>
-                        <td>{{ activo.marca|default:"-" }}</td>
+                        <td>{{ activo.marca.nombre|default:"-" }}</td>
                         <td>{{ activo.activo|default:"-" }}</td>
                     </tr>
                     {% empty %}

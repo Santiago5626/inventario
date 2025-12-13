@@ -371,7 +371,9 @@ def importar_activos(request):
                 wb = openpyxl.load_workbook(excel_file)
                 ws = wb.active
                 
+                # Contadores
                 importados = 0
+                actualizados = 0
                 omitidos = 0
                 errores = 0
                 errores_list = []
@@ -393,63 +395,11 @@ def importar_activos(request):
                         
                         if not sn:
                             # Sin serial no procesamos
-                            # errores += 1
-                            # errores_list.append(f"Fila {row_idx}: No tiene S/N.")
-                            continue
-                            
-                        # Validación de existencia (Case Insensitive)
-                        if Activo.objects.filter(sn__iexact=sn).exists():
-                            omitidos += 1
-                            continue
-                        
-                        # Leer datos clave para validación
-                        zona_txt = str(row[16]).strip() if row[16] else "Valledupar"
-                        categoria_nombre = str(row[17]).strip() if row[17] else None
-                        marca_nombre = str(row[9]).strip() if row[9] else None
-                        
-                        # Validación: Zona
-                        if not Zona.objects.filter(nombre__iexact=zona_txt).exists():
-                            errores += 1
-                            errores_list.append(f"Fila {row_idx} (S/N {sn}): Zona '{zona_txt}' no existe.")
-                            continue
-                            
-                        # Validación: Categoría
-                        categoria_obj = None
-                        if categoria_nombre:
-                            categoria_obj = Categoria.objects.filter(nombre__iexact=categoria_nombre).first()
-                            
-                        if not categoria_obj:
-                            errores += 1
-                            errores_list.append(f"Fila {row_idx} (S/N {sn}): Categoría '{categoria_nombre}' no existe.")
                             continue
 
-                        # Validación: Marca
-                        marca_obj = None
-                        if marca_nombre:
-                            if categoria_obj:
-                                # Buscar marca que pertenezca a la categoría
-                                marca_obj = Marca.objects.filter(nombre__iexact=marca_nombre, categoria=categoria_obj).first()
-                                if not marca_obj:
-                                     # Intentar buscar solo por nombre para dar mejor feedback
-                                     marca_existe = Marca.objects.filter(nombre__iexact=marca_nombre).exists()
-                                     if marca_existe:
-                                         errores += 1
-                                         errores_list.append(f"Fila {row_idx} (S/N {sn}): La marca '{marca_nombre}' no pertenece a la categoría '{categoria_nombre}'.")
-                                         continue
-                                     else:
-                                         errores += 1
-                                         errores_list.append(f"Fila {row_idx} (S/N {sn}): Marca '{marca_nombre}' no existe.")
-                                         continue
-                            else:
-                                # Should not happen due to prev check, but safety fallback
-                                marca_obj = Marca.objects.filter(nombre__iexact=marca_nombre).first()
+                        # --- PREPARACIÓN Y VALIDACIÓN DE DATOS (Mochila de datos) ---
                         
-                        if not marca_obj:
-                            errores += 1
-                            errores_list.append(f"Fila {row_idx} (S/N {sn}): Marca '{marca_nombre}' es obligatoria o no existe.")
-                            continue
-
-                        # Preparar resto de datos
+                        # Datos directos
                         documento = safe_str(row[1])
                         nombres = str(row[2]).strip() if row[2] else None
                         imei1 = safe_str(row[3])
@@ -461,53 +411,156 @@ def importar_activos(request):
                         cargo = str(row[11]).strip() if row[11] else "vendedor ambulante"
                         estado = str(row[12]).strip() if row[12] else "activo confirmado"
                         
-                        # Si tiene nombres y apellidos (vendedor asignado) y el estado es confirmado,
-                        # cambiar automáticamente a asignado.
+                        # Lógica especial: nombres + activo confirmado = asignado
                         if nombres and estado.lower() == 'activo confirmado':
                             estado = 'asignado'
-                        
+                            
                         responsable = str(row[14]).strip() if row[14] else None
                         identificacion = safe_str(row[15])
                         observacion = str(row[18]).strip() if row[18] else "Importado masivamente"
                         punto_venta = str(row[19]).strip() if row[19] else None
                         codigo_centro = safe_str(row[20])
                         centro_punto = str(row[21]).strip() if row[21] else None
+
+                        # Datos Relacionales (FKs)
+                        zona_txt = str(row[16]).strip() if row[16] else "Valledupar"
+                        categoria_nombre = str(row[17]).strip() if row[17] else None
+                        marca_nombre = str(row[9]).strip() if row[9] else None
+
+                        # --- VALIDACIÓN FKs ---
                         
-                        # Crear activo
-                        nuevo_activo = Activo(
-                            documento=documento,
-                            nombres_apellidos=nombres,
-                            imei1=imei1,
-                            imei2=imei2,
-                            sn=sn,
-                            iccid=iccid,
-                            operador=operador,
-                            mac_superflex=mac,
-                            marca=marca_obj,
-                            activo=nombre_activo,
-                            cargo=cargo,
-                            estado=estado,
-                            responsable=responsable,
-                            identificacion=identificacion,
-                            zona=zona_txt,
-                            categoria=categoria_obj,
-                            observacion=observacion,
-                            punto_venta=punto_venta,
-                            codigo_centro_costo=codigo_centro,
-                            centro_costo_punto=centro_punto
-                        )
-                        nuevo_activo.save()
+                        # Zona
+                        if not Zona.objects.filter(nombre__iexact=zona_txt).exists():
+                            errores += 1
+                            errores_list.append(f"Fila {row_idx} (S/N {sn}): Zona '{zona_txt}' no existe.")
+                            continue
+                            
+                        # Categoría
+                        categoria_obj = None
+                        if categoria_nombre:
+                            categoria_obj = Categoria.objects.filter(nombre__iexact=categoria_nombre).first()
+                            
+                        if not categoria_obj:
+                            errores += 1
+                            errores_list.append(f"Fila {row_idx} (S/N {sn}): Categoría '{categoria_nombre}' no existe.")
+                            continue
+
+                        # Marca
+                        marca_obj = None
+                        if marca_nombre:
+                            if categoria_obj:
+                                marca_obj = Marca.objects.filter(nombre__iexact=marca_nombre, categoria=categoria_obj).first()
+                                if not marca_obj:
+                                     if Marca.objects.filter(nombre__iexact=marca_nombre).exists():
+                                         errores += 1
+                                         errores_list.append(f"Fila {row_idx} (S/N {sn}): La marca '{marca_nombre}' no pertenece a la categoría '{categoria_nombre}'.")
+                                         continue
+                                     else:
+                                         errores += 1
+                                         errores_list.append(f"Fila {row_idx} (S/N {sn}): Marca '{marca_nombre}' no existe.")
+                                         continue
+                            else:
+                                marca_obj = Marca.objects.filter(nombre__iexact=marca_nombre).first()
                         
-                        # Registrar trazabilidad
-                        Tranzabilidad.objects.create(
-                            activo=nuevo_activo,
-                            tipo='ingreso',
-                            usuario=request.user,
-                            zona_destino=zona_txt,
-                            descripcion='Importación masiva desde Excel'
-                        )
+                        if not marca_obj:
+                            errores += 1
+                            errores_list.append(f"Fila {row_idx} (S/N {sn}): Marca '{marca_nombre}' es obligatoria o no existe.")
+                            continue
+
+                        # --- LÓGICA CORE: BUSCAR O CREAR/ACTUALIZAR ---
                         
-                        importados += 1
+                        activo_existente = Activo.objects.filter(sn__iexact=sn).first()
+                        
+                        if activo_existente:
+                            # --- LÓGICA DE ACTUALIZACIÓN (UPSERT) ---
+                            cambios = []
+                            
+                            # Lista de campos a verificar y actualizar si están vacíos
+                            campos_a_verificar = [
+                                ('documento', documento),
+                                ('nombres_apellidos', nombres),
+                                ('imei1', imei1),
+                                ('imei2', imei2),
+                                ('iccid', iccid),
+                                ('operador', operador),
+                                ('mac_superflex', mac),
+                                ('marca', marca_obj),
+                                ('activo', nombre_activo),
+                                # ('cargo', cargo), # Cargo suele tener default, cuidado al actualizar
+                                # ('estado', estado), # Estado es delicado, mejor no tocar si ya tiene
+                                ('responsable', responsable),
+                                ('identificacion', identificacion),
+                                # ('zona', zona_txt), # Zona tiene default
+                                ('categoria', categoria_obj),
+                                # ('observacion', observacion), # Observacion suele tener info
+                                ('punto_venta', punto_venta),
+                                ('codigo_centro_costo', codigo_centro),
+                                ('centro_costo_punto', centro_punto),
+                            ]
+                            
+                            se_actualizo = False
+                            for campo, nuevo_valor in campos_a_verificar:
+                                valor_actual = getattr(activo_existente, campo)
+                                
+                                # Normalizar para chequeo de vacío (incluyendo "None" string, espacios, etc.)
+                                val_str = str(valor_actual).strip().lower() if valor_actual is not None else ""
+                                si_es_vacio = val_str == "" or val_str == "none" or val_str == "null"
+                                
+                                if si_es_vacio and nuevo_valor:
+                                    setattr(activo_existente, campo, nuevo_valor)
+                                    cambios.append(campo)
+                                    se_actualizo = True
+                            
+                            if se_actualizo:
+                                activo_existente.save()
+                                actualizados += 1
+                                
+                                # Registrar Trazabilidad (Actualización)
+                                Tranzabilidad.objects.create(
+                                    activo=activo_existente,
+                                    tipo='actualizacion',
+                                    usuario=request.user,
+                                    descripcion=f'Actualización masiva: campos completados {", ".join(cambios)}'
+                                )
+                            else:
+                                omitidos += 1
+                        
+                        else:
+                            # --- CREACIÓN NUEVO ACTIVO ---
+                            nuevo_activo = Activo(
+                                documento=documento,
+                                nombres_apellidos=nombres,
+                                imei1=imei1,
+                                imei2=imei2,
+                                sn=sn,
+                                iccid=iccid,
+                                operador=operador,
+                                mac_superflex=mac,
+                                marca=marca_obj,
+                                activo=nombre_activo,
+                                cargo=cargo,
+                                estado=estado,
+                                responsable=responsable,
+                                identificacion=identificacion,
+                                zona=zona_txt,
+                                categoria=categoria_obj,
+                                observacion=observacion,
+                                punto_venta=punto_venta,
+                                codigo_centro_costo=codigo_centro,
+                                centro_costo_punto=centro_punto
+                            )
+                            nuevo_activo.save()
+                            
+                            # Registrar trazabilidad
+                            Tranzabilidad.objects.create(
+                                activo=nuevo_activo,
+                                tipo='ingreso',
+                                usuario=request.user,
+                                zona_destino=zona_txt,
+                                descripcion='Importación masiva desde Excel'
+                            )
+                            
+                            importados += 1
                         
                     except Exception as e:
                         print(f"Error en fila {row_idx}: {e}")
@@ -518,7 +571,7 @@ def importar_activos(request):
                 icono = 'success'
                 titulo = 'Proceso Finalizado'
                 
-                msg = f'<br>Importados: {importados}<br>Omitidos (Duplicados): {omitidos}'
+                msg = f'<br>Importados: {importados}<br>Actualizados: {actualizados}<br>Omitidos (Duplicados): {omitidos}'
                 
                 if errores > 0:
                     icono = 'warning'
