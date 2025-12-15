@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Registrar Tranzabilidad{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <h1>Registrar Tranzabilidad</h1>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group mb-3">
+                <label for="id_activo" class="form-label">Activo</label>
+                {{ form.activo }}
+                <!-- Django form rendering for ModelChoiceField is easiest if we use {{ form.activo }}.
+                     Creating a manual select would require passing 'activos' context which we haven't done explicitly in views yet (though ModelForm handles it). 
+                     Since we used CreateView with model=Tranzabilidad and fields including 'activo', form.activo should render. 
+                     However, standard bootstrap styling might be missing if we just do {{ form.activo }}. 
+                     Let's use manual rendering if possible but we need the list. 
+                     Wait, CreateView renders a form object. Let's use {{ form.activo }} with class widget tweak in forms.py OR just rely on default for now and see.
+                     The user didn't ask for a custom form class update, but CreateView auto-generates one. 
+                     Let's try to trust Django's default rendering for the select, but add the class 'form-control' via a small script or just wrapping.
+                -->
+                <!-- Better approach: Access the field manually. -->
+                <select name="activo" class="form-control" required id="id_activo">
+                    {% for value, text in form.activo.field.choices %}
+                    <option value="{{ value }}" {% if form.activo.value|stringformat:"s"==value|stringformat:"s"
+                        %}selected{% endif %}>{{ text }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group mb-3">
+                <label for="tipo" class="form-label">Tipo de Tranzabilidad</label>
+                <select name="tipo" class="form-control" required>
+                    <option value="ingreso">Ingreso</option>
+                    <option value="salida">Salida</option>
+                    <option value="transferencia">Transferencia</option>
+                    <option value="cambio_estado">Cambio de Estado</option>
+                </select>
+            </div>
+            <div class="form-group mb-3">
+                <label for="zona_origen" class="form-label">Zona Origen</label>
+                <select name="zona_origen" class="form-control">
+                    <option value="">Ninguna</option>
+                    {% for zona in zonas %}
+                    <option value="{{ zona }}">{{ zona }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group mb-3">
+                <label for="zona_destino" class="form-label">Zona Destino</label>
+                <select name="zona_destino" class="form-control">
+                    <option value="">Ninguna</option>
+                    {% for zona in zonas %}
+                    <option value="{{ zona }}">{{ zona }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group mb-3">
+                <label for="estado_nuevo" class="form-label">Estado Nuevo</label>
+                <input type="text" name="estado_nuevo" class="form-control" placeholder="Ej. reparación, asignado">
+            </div>
+            <div class="form-group mb-3">
+                <label for="descripcion" class="form-label">Descripción</label>
+                <textarea name="descripcion" class="form-control"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Registrar Tranzabilidad</button>
+            <a href="{% url 'activos:tranzabilidad_list' %}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

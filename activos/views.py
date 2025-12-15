@@ -853,7 +853,7 @@ class ActivoAsignarView(LoginRequiredMixin, UpdateView):
             tipo='asignacion',
             usuario=self.request.user,
             zona_destino=self.object.zona,
-            descripcion=f'Asignado a: {self.object.responsable}'
+            descripcion=f'Asignado a: {self.object.nombres_apellidos}'
         )
         return response
 
@@ -1410,3 +1410,43 @@ class CategoriaDeleteView(LoginRequiredMixin, DeleteView):
             return redirect('activos:home')
         return super().dispatch(request, *args, **kwargs)
 
+ 
+ c l a s s   R e g i s t r a r T r a n z a b i l i d a d G e n e r a l V i e w ( L o g i n R e q u i r e d M i x i n ,   C r e a t e V i e w ) :  
+         m o d e l   =   T r a n z a b i l i d a d  
+         f i e l d s   =   [ ' a c t i v o ' ,   ' t i p o ' ,   ' z o n a _ o r i g e n ' ,   ' z o n a _ d e s t i n o ' ,   ' e s t a d o _ n u e v o ' ,   ' d e s c r i p c i o n ' ]  
+         t e m p l a t e _ n a m e   =   ' a c t i v o s / r e g i s t r a r _ t r a n z a b i l i d a d _ g e n e r a l . h t m l '  
+         s u c c e s s _ u r l   =   r e v e r s e _ l a z y ( ' a c t i v o s : t r a n z a b i l i d a d _ l i s t ' )  
+  
+         d e f   d i s p a t c h ( s e l f ,   r e q u e s t ,   * a r g s ,   * * k w a r g s ) :  
+                 i f   r e q u e s t . u s e r . r o l   n o t   i n   [ ' a d m i n ' ,   ' l o g i s t i c a ' ] :  
+                         m e s s a g e s . e r r o r ( r e q u e s t ,   ' N o   t i e n e s   p e r m i s o s   p a r a   r e g i s t r a r   t r a n z a b i l i d a d . ' )  
+                         r e t u r n   r e d i r e c t ( ' a c t i v o s : h o m e ' )  
+                 r e t u r n   s u p e r ( ) . d i s p a t c h ( r e q u e s t ,   * a r g s ,   * * k w a r g s )  
+          
+         d e f   g e t _ c o n t e x t _ d a t a ( s e l f ,   * * k w a r g s ) :  
+                 c o n t e x t   =   s u p e r ( ) . g e t _ c o n t e x t _ d a t a ( * * k w a r g s )  
+                 #   O b t e n e r   z o n a s   Ã º n i c a s   d e   l o s   a c t i v o s   p a r a   e l   d a t a l i s t   o   s e l e c t  
+                 c o n t e x t [ ' z o n a s ' ]   =   A c t i v o . o b j e c t s . v a l u e s _ l i s t ( ' z o n a ' ,   f l a t = T r u e ) . d i s t i n c t ( )  
+                 r e t u r n   c o n t e x t  
+  
+         d e f   f o r m _ v a l i d ( s e l f ,   f o r m ) :  
+                 f o r m . i n s t a n c e . u s u a r i o   =   s e l f . r e q u e s t . u s e r  
+                 a c t i v o   =   f o r m . c l e a n e d _ d a t a [ ' a c t i v o ' ]  
+                 f o r m . i n s t a n c e . e s t a d o _ a n t e r i o r   =   a c t i v o . e s t a d o  
+  
+                 #   A c t u a l i z a r   e l   a c t i v o   s i   e s   n e c e s a r i o  
+                 s a v e _ a c t i v o   =   F a l s e  
+                 i f   f o r m . c l e a n e d _ d a t a [ ' e s t a d o _ n u e v o ' ] :  
+                         a c t i v o . e s t a d o   =   f o r m . c l e a n e d _ d a t a [ ' e s t a d o _ n u e v o ' ]  
+                         s a v e _ a c t i v o   =   T r u e  
+  
+                 i f   f o r m . c l e a n e d _ d a t a [ ' z o n a _ d e s t i n o ' ] :  
+                         a c t i v o . z o n a   =   f o r m . c l e a n e d _ d a t a [ ' z o n a _ d e s t i n o ' ]  
+                         s a v e _ a c t i v o   =   T r u e  
+                          
+                 i f   s a v e _ a c t i v o :  
+                         a c t i v o . s a v e ( )  
+  
+                 m e s s a g e s . s u c c e s s ( s e l f . r e q u e s t ,   ' T r a n z a b i l i d a d   r e g i s t r a d a   e x i t o s a m e n t e . ' )  
+                 r e t u r n   s u p e r ( ) . f o r m _ v a l i d ( f o r m )  
+ 
