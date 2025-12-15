@@ -13,19 +13,6 @@
                 <!-- Django form rendering for ModelChoiceField is easiest if we use {{ form.activo }}.
                      Creating a manual select would require passing 'activos' context which we haven't done explicitly in views yet (though ModelForm handles it). 
                      Since we used CreateView with model=Tranzabilidad and fields including 'activo', form.activo should render. 
-                     However, standard bootstrap styling might be missing if we just do {{ form.activo }}. 
-                     Let's use manual rendering if possible but we need the list. 
-                     Wait, CreateView renders a form object. Let's use {{ form.activo }} with class widget tweak in forms.py OR just rely on default for now and see.
-                     The user didn't ask for a custom form class update, but CreateView auto-generates one. 
-                     Let's try to trust Django's default rendering for the select, but add the class 'form-control' via a small script or just wrapping.
-                -->
-                <!-- Better approach: Access the field manually. -->
-                <select name="activo" class="form-control" required id="id_activo">
-                    {% for value, text in form.activo.field.choices %}
-                    <option value="{{ value }}" {% if form.activo.value|stringformat:"s"==value|stringformat:"s"
-                        %}selected{% endif %}>{{ text }}</option>
-                    {% endfor %}
-                </select>
             </div>
 
             <div class="form-group mb-3">

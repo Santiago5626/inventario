@@ -103,8 +103,6 @@
     {% endif %}
 </table>
 <div class="mt-3">
-    <a href="{% url 'activos:home' %}" class="btn btn-secondary">Volver al listado</a>
-
     {% if user.rol == 'admin' or user.rol == 'asignador' %}
     <a href="{% url 'activos:activo_update' object.pk %}" class="btn btn-warning">Editar</a>
     {% endif %}
