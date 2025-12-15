@@ -166,7 +166,7 @@
                                         {{ movimiento.usuario.username|make_list|first|upper }}
                                     </div>
                                     <span class="text-dark small">
-                                        {{ firstof movimiento.usuario.get_full_name movimiento.usuario.username }}
+                                        {% firstof movimiento.usuario.get_full_name movimiento.usuario.username %}
                                     </span>
                                 </div>
                             </td>
