@@ -1,0 +1,80 @@
+<div class="modal-header">
+    <h5 class="modal-title" id="tranzabilidadModalLabel">Registrar Trazabilidad</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+</div>
+<form method="post" action="{% url 'activos:registrar_tranzabilidad_general' %}" id="tranzabilidadForm">
+    <div class="modal-body">
+        {% csrf_token %}
+
+        <!-- Campo oculto para el ID del activo -->
+        <input type="hidden" name="activo" id="id_activo_hidden" required>
+
+        <!-- Búsqueda de Activo -->
+        <div class="mb-3 position-relative">
+            <label for="buscar_activo_input" class="form-label">Buscar Activo</label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" class="form-control" id="buscar_activo_input"
+                    placeholder="Serial, Activo, Documento..." autocomplete="off">
+                <button class="btn btn-outline-secondary" type="button" id="limpiar_busqueda" style="display: none;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="resultados_busqueda" class="list-group position-absolute w-100 shadow-lg"
+                style="z-index: 1050; display: none; max-height: 200px; overflow-y: auto;">
+                <!-- Resultados AJAX -->
+            </div>
+            <div id="activo_seleccionado_info" class="form-text text-success fw-bold mt-1" style="display: none;">
+                <i class="fas fa-check-circle me-1"></i> <span id="texto_seleccionado"></span>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="id_tipo" class="form-label">Tipo de Acción</label>
+                <select name="tipo" class="form-select" id="id_tipo" required>
+                    <option value="" selected>---------</option>
+                    <option value="ingreso">Ingreso</option>
+                    <option value="salida">Salida</option>
+                    <option value="transferencia">Transferencia</option>
+                    <option value="cambio_estado">Cambio de Estado</option>
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="id_estado_nuevo" class="form-label">Estado Nuevo</label>
+                <input type="text" name="estado_nuevo" class="form-control" id="id_estado_nuevo"
+                    placeholder="Ej. asignado, reparación">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="id_zona_origen" class="form-label">Zona Origen</label>
+                <select name="zona_origen" class="form-select" id="id_zona_origen">
+                    <option value="">Ninguna</option>
+                    {% for zona in zonas %}
+                    <option value="{{ zona }}">{{ zona }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="id_zona_destino" class="form-label">Zona Destino</label>
+                <select name="zona_destino" class="form-select" id="id_zona_destino">
+                    <option value="">Ninguna</option>
+                    {% for zona in zonas %}
+                    <option value="{{ zona }}">{{ zona }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="id_descripcion" class="form-label">Descripción / Observación</label>
+            <textarea name="descripcion" class="form-control" id="id_descripcion" rows="3"></textarea>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Guardar Registro</button>
+    </div>
+</form>

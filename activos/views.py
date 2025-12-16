@@ -2824,6 +2824,47 @@ class CategoriaDeleteView(LoginRequiredMixin, DeleteView):
 
 
 
+
+@login_required
+def buscar_activos_ajax(request):
+    """
+    Busca activos por varios criterios y retorna JSON.
+    Query params: q (termino de busqueda)
+    """
+    query = request.GET.get('q', '').strip()
+    if len(query) < 2:
+        return JsonResponse({'results': []})
+    
+    # Buscar por SN, Activo, Documento, IMEI
+    # Priorizar coincidencias exactas o inicio
+    
+    qs = Activo.objects.filter(
+        Q(sn__icontains=query) |
+        Q(activo__icontains=query) |
+        Q(documento__icontains=query) |
+        Q(imei1__icontains=query) |
+        Q(imei2__icontains=query)
+    ).values('item', 'activo', 'sn', 'documento', 'imei1', 'zona', 'responsable', 'estado')[:20]  # Limitar resultados
+    
+    results = []
+    for item in qs:
+        # Construir texto descriptivo
+        text = f"{item['activo'] or 'Sin Nombre'} - {item['sn'] or 'Sin SN'}"
+        if item['documento']:
+            text += f" ({item['documento']})"
+            
+        results.append({
+            'id': item['item'],
+            'text': text,
+            'sn': item['sn'],
+            'imei': item['imei1'],
+            'zona': item['zona'],
+            'estado': item['estado']
+        })
+        
+    return JsonResponse({'results': results})
+
+
 class RegistrarTranzabilidadGeneralView(LoginRequiredMixin, CreateView):
 
     model = Tranzabilidad
@@ -2833,6 +2874,13 @@ class RegistrarTranzabilidadGeneralView(LoginRequiredMixin, CreateView):
     template_name = 'activos/registrar_tranzabilidad_general.html'
 
     success_url = reverse_lazy('activos:tranzabilidad_list')
+
+
+
+    def get_template_names(self):
+        if self.request.GET.get('modal'):
+            return ['activos/partials/form_tranzabilidad_general.html']
+        return [self.template_name]
 
 
 

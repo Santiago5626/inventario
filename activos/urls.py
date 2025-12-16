@@ -22,6 +22,8 @@ urlpatterns = [
     path('eliminar-multiples/', views.eliminar_multiples_activos, name='activo_delete_multiple'),
     path('<int:pk>/historial/', views.historial_activo, name='historial_activo'),
     path('<int:pk>/tranzabilidad/', views.RegistrarTranzabilidadView.as_view(), name='registrar-tranzabilidad'),
+    
+    path('api/buscar-activos/', views.buscar_activos_ajax, name='buscar_activos_ajax'),
 
     path('tranzabilidad/registrar/', views.RegistrarTranzabilidadGeneralView.as_view(), name='registrar_tranzabilidad_general'),
     path('tranzabilidad/', views.TranzabilidadListView.as_view(), name='tranzabilidad_list'),

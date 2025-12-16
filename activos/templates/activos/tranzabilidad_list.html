@@ -10,9 +10,9 @@
             <i class="fas fa-history me-2"></i>Tranzabilidad
         </h1>
         <div class="d-flex gap-2">
-            <a href="{% url 'activos:registrar_tranzabilidad_general' %}" class="btn btn-primary">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registroModal">
                 <i class="fas fa-plus me-2"></i>Registrar Tranzabilidad
-            </a>
+            </button>
             <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse"
                 data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
                 <i class="fas fa-filter me-2"></i>Filtros
@@ -393,58 +393,194 @@
     </div>
 </div>
 
+<!-- Modal de Registro de Tranzabilidad -->
+<div class="modal fade" id="registroModal" tabindex="-1" aria-labelledby="registroModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content" id="registroModalContent">
+            <div class="modal-header">
+                <h5 class="modal-title" id="registroModalLabel">Cargando formulario...</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Cargando...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        var detalleModal = document.getElementById('detalleModal');
-        detalleModal.addEventListener('show.bs.modal', function (event) {
-            var button = event.relatedTarget; // Botón que activó el modal
+        var registroModal = document.getElementById('registroModal');
+        var registroModalContent = document.getElementById('registroModalContent');
 
-            // Extraer info de atributos data-*
-            var id = button.getAttribute('data-id');
-            var fecha = button.getAttribute('data-fecha');
-            var tipo = button.getAttribute('data-tipo');
-            var usuario = button.getAttribute('data-usuario');
-            var descripcion = button.getAttribute('data-descripcion');
-
-            var activoNombre = button.getAttribute('data-activo-nombre');
-            var activoSerial = button.getAttribute('data-activo-serial');
-            var activoEstado = button.getAttribute('data-activo-estado');
-            var activoZona = button.getAttribute('data-activo-zona');
-            var activoResponsable = button.getAttribute('data-activo-responsable');
-            var activoMarca = button.getAttribute('data-activo-marca');
-            var activoCategoria = button.getAttribute('data-activo-categoria');
-
-            // Actualizar contenido del modal
-            document.getElementById('modal-fecha').textContent = fecha;
-            document.getElementById('modal-tipo').textContent = tipo;
-            document.getElementById('modal-usuario').textContent = usuario;
-            document.getElementById('modal-descripcion').textContent = descripcion;
-
-            document.getElementById('modal-activo-nombre').textContent = activoNombre;
-            document.getElementById('modal-activo-serial').textContent = activoSerial;
-            document.getElementById('modal-activo-estado').textContent = activoEstado;
-            document.getElementById('modal-activo-zona').textContent = activoZona;
-            document.getElementById('modal-activo-responsable').textContent = activoResponsable;
-            document.getElementById('modal-activo-marca').textContent = activoMarca;
-            document.getElementById('modal-activo-categoria').textContent = activoCategoria;
-
-            // Manejar historial de cambios
-            var historialData = document.getElementById('historial-data-' + id);
-            var changesSection = document.getElementById('modal-changes-section');
-            var changesContent = document.getElementById('modal-changes-content');
-
-            changesContent.innerHTML = ''; // Limpiar anterior
-
-            if (historialData && historialData.children.length > 0) {
-                changesSection.classList.remove('d-none');
-                // Copiar el contenido HTML pre-renderizado al modal
-                Array.from(historialData.children).forEach(function (child) {
-                    changesContent.appendChild(child.cloneNode(true));
+        registroModal.addEventListener('show.bs.modal', function (event) {
+            // Cargar el formulario vía AJAX
+            fetch("{% url 'activos:registrar_tranzabilidad_general' %}?modal=true")
+                .then(response => response.text())
+                .then(html => {
+                    registroModalContent.innerHTML = html;
+                    initRegistroScripts(); // Inicializar scripts del formulario cargado
+                })
+                .catch(error => {
+                    registroModalContent.innerHTML = '<div class="modal-body text-danger">Error al cargar el formulario.</div>';
+                    console.error('Error:', error);
                 });
-            } else {
-                changesSection.classList.add('d-none');
-            }
         });
+
+        function initRegistroScripts() {
+            const searchInput = document.getElementById('buscar_activo_input');
+            const resultsDiv = document.getElementById('resultados_busqueda');
+            const hiddenInput = document.getElementById('id_activo_hidden');
+            const selectedInfo = document.getElementById('activo_seleccionado_info');
+            const selectedText = document.getElementById('texto_seleccionado');
+            const clearButton = document.getElementById('limpiar_busqueda');
+            const zonaOrigenSelect = document.getElementById('id_zona_origen');
+
+            if (!searchInput) return; // Si no se cargó bien el form
+
+            let debounceTimer;
+
+            searchInput.addEventListener('input', function () {
+                const query = this.value.trim();
+                clearTimeout(debounceTimer);
+
+                if (query.length < 2) {
+                    resultsDiv.style.display = 'none';
+                    return;
+                }
+
+                debounceTimer = setTimeout(() => {
+                    fetch(`{% url 'activos:buscar_activos_ajax' %}?q=${encodeURIComponent(query)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            resultsDiv.innerHTML = '';
+                            if (data.results.length > 0) {
+                                data.results.forEach(item => {
+                                    const a = document.createElement('a');
+                                    a.href = '#';
+                                    a.className = 'list-group-item list-group-item-action';
+                                    // Determinar zona segura
+                                    const zonaTexto = item.zona ? item.zona : 'Sin Zona';
+
+                                    a.innerHTML = `
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">${item.text}</h6>
+                                            <small class="text-muted">${zonaTexto}</small>
+                                        </div>
+                                        <small class="text-muted">SN: ${item.sn || 'N/A'} | IMEI: ${item.imei || 'N/A'}</small>
+                                    `;
+                                    a.addEventListener('click', function (e) {
+                                        e.preventDefault();
+                                        seleccionarActivo(item);
+                                    });
+                                    resultsDiv.appendChild(a);
+                                });
+                                resultsDiv.style.display = 'block';
+                            } else {
+                                resultsDiv.innerHTML = '<div class="list-group-item">No se encontraron resultados</div>';
+                                resultsDiv.style.display = 'block';
+                            }
+                        });
+                }, 300);
+            });
+
+            function seleccionarActivo(item) {
+                hiddenInput.value = item.id;
+                selectedText.textContent = item.text;
+                selectedInfo.style.display = 'block';
+                resultsDiv.style.display = 'none';
+                searchInput.value = item.text;
+                clearButton.style.display = 'block';
+                searchInput.readOnly = true;
+
+                // Pre-seleccionar Zona Origen si existe
+                if (item.zona && zonaOrigenSelect) {
+                    for (let i = 0; i < zonaOrigenSelect.options.length; i++) {
+                        if (zonaOrigenSelect.options[i].value === item.zona) {
+                            zonaOrigenSelect.selectedIndex = i;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (clearButton) {
+                clearButton.addEventListener('click', function () {
+                    hiddenInput.value = '';
+                    searchInput.value = '';
+                    searchInput.readOnly = false;
+                    selectedInfo.style.display = 'none';
+                    clearButton.style.display = 'none';
+                    resultsDiv.style.display = 'none';
+                    searchInput.focus();
+                });
+            }
+
+            // Cerrar resultados si clic fuera
+            document.addEventListener('click', function (e) {
+                if (searchInput && resultsDiv && !searchInput.contains(e.target) && !resultsDiv.contains(e.target)) {
+                    resultsDiv.style.display = 'none';
+                }
+            });
+        }
+    });
+
+    // Lógica para el modal de detalle existente
+    document.addEventListener('DOMContentLoaded', function () {
+        var detalleModal = document.getElementById('detalleModal');
+        if (detalleModal) {
+            detalleModal.addEventListener('show.bs.modal', function (event) {
+                var button = event.relatedTarget; // Botón que activó el modal
+
+                // Extraer info de atributos data-*
+                var id = button.getAttribute('data-id');
+                var fecha = button.getAttribute('data-fecha');
+                var tipo = button.getAttribute('data-tipo');
+                var usuario = button.getAttribute('data-usuario');
+                var descripcion = button.getAttribute('data-descripcion');
+
+                var activoNombre = button.getAttribute('data-activo-nombre');
+                var activoSerial = button.getAttribute('data-activo-serial');
+                var activoEstado = button.getAttribute('data-activo-estado');
+                var activoZona = button.getAttribute('data-activo-zona');
+                var activoResponsable = button.getAttribute('data-activo-responsable');
+                var activoMarca = button.getAttribute('data-activo-marca');
+                var activoCategoria = button.getAttribute('data-activo-categoria');
+
+                // Actualizar contenido del modal
+                document.getElementById('modal-fecha').textContent = fecha;
+                document.getElementById('modal-tipo').textContent = tipo;
+                document.getElementById('modal-usuario').textContent = usuario;
+                document.getElementById('modal-descripcion').textContent = descripcion;
+
+                document.getElementById('modal-activo-nombre').textContent = activoNombre;
+                document.getElementById('modal-activo-serial').textContent = activoSerial;
+                document.getElementById('modal-activo-estado').textContent = activoEstado;
+                document.getElementById('modal-activo-zona').textContent = activoZona;
+                document.getElementById('modal-activo-responsable').textContent = activoResponsable;
+                document.getElementById('modal-activo-marca').textContent = activoMarca;
+                document.getElementById('modal-activo-categoria').textContent = activoCategoria;
+
+                // Manejar historial de cambios
+                var historialData = document.getElementById('historial-data-' + id);
+                var changesSection = document.getElementById('modal-changes-section');
+                var changesContent = document.getElementById('modal-changes-content');
+
+                changesContent.innerHTML = ''; // Limpiar anterior
+
+                if (historialData && historialData.children.length > 0) {
+                    changesSection.classList.remove('d-none');
+                    // Copiar el contenido HTML pre-renderizado al modal
+                    Array.from(historialData.children).forEach(function (child) {
+                        changesContent.appendChild(child.cloneNode(true));
+                    });
+                } else {
+                    changesSection.classList.add('d-none');
+                }
+            });
+        }
     });
 </script>
 {% endblock %}
