@@ -486,7 +486,7 @@ def exportar_excel(request):
 
                'ICCID', 'OPERADOR', 'MAC SUPERFLEX', 'MARCA', 'ACTIVO', 'CARGO', 'ESTADO', 
 
-               'FECHA CONFIRMACIÓN', 'RESPONSABLE', 'IDENTIFICACIÓN', 'ZONA', 'CATEGORÍA', 
+               'FECHA CONFIRMACIÓN', 'RESPONSABLE', 'IDENTIFICACIÓN', 'ZONA', 
 
                'OBSERVACIÓN', 'PUNTO DE VENTA', 'CÓDIGO CENTRO COSTO', 'CENTRO COSTO PUNTO', 
 
@@ -551,8 +551,6 @@ def exportar_excel(request):
             activo.identificacion or '',
 
             activo.zona or '',
-
-            str(activo.categoria) if activo.categoria else '',
 
             activo.observacion or '',
 
@@ -668,7 +666,7 @@ def descargar_plantilla(request):
 
                'ICCID', 'OPERADOR', 'MAC SUPERFLEX', 'MARCA', 'ACTIVO', 'CARGO', 'ESTADO', 
 
-               'FECHA CONFIRMACIÓN', 'RESPONSABLE', 'IDENTIFICACIÓN', 'ZONA', 'CATEGORÍA', 
+               'FECHA CONFIRMACIÓN', 'RESPONSABLE', 'IDENTIFICACIÓN', 'ZONA', 
 
                'OBSERVACIÓN', 'PUNTO DE VENTA', 'CÓDIGO CENTRO COSTO', 'CENTRO COSTO PUNTO', 
 
@@ -836,21 +834,19 @@ def importar_activos(request):
 
                         identificacion = safe_str(row[15])
 
-                        observacion = str(row[18]).strip() if row[18] else "Importado masivamente"
+                        observacion = str(row[17]).strip() if row[17] else "Importado masivamente"
 
-                        punto_venta = str(row[19]).strip() if row[19] else None
+                        punto_venta = str(row[18]).strip() if row[18] else None
 
-                        codigo_centro = safe_str(row[20])
+                        codigo_centro = safe_str(row[19])
 
-                        centro_punto = str(row[21]).strip() if row[21] else None
+                        centro_punto = str(row[20]).strip() if row[20] else None
 
 
 
                         # Datos Relacionales (FKs)
 
                         zona_txt = str(row[16]).strip() if row[16] else "Valledupar"
-
-                        categoria_nombre = str(row[17]).strip() if row[17] else None
 
                         marca_nombre = str(row[9]).strip() if row[9] else None
 
@@ -872,57 +868,13 @@ def importar_activos(request):
 
                             
 
-                        # Categoría
-
-                        categoria_obj = None
-
-                        if categoria_nombre:
-
-                            categoria_obj = Categoria.objects.filter(nombre__iexact=categoria_nombre).first()
-
-                            
-
-                        if not categoria_obj:
-
-                            errores += 1
-
-                            errores_list.append(f"Fila {row_idx} (S/N {sn}): Categoría '{categoria_nombre}' no existe.")
-
-                            continue
-
-
-
-                        # Marca
+                        # Marca (sin validar categoría)
 
                         marca_obj = None
 
                         if marca_nombre:
 
-                            if categoria_obj:
-
-                                marca_obj = Marca.objects.filter(nombre__iexact=marca_nombre, categoria=categoria_obj).first()
-
-                                if not marca_obj:
-
-                                     if Marca.objects.filter(nombre__iexact=marca_nombre).exists():
-
-                                         errores += 1
-
-                                         errores_list.append(f"Fila {row_idx} (S/N {sn}): La marca '{marca_nombre}' no pertenece a la categoría '{categoria_nombre}'.")
-
-                                         continue
-
-                                     else:
-
-                                         errores += 1
-
-                                         errores_list.append(f"Fila {row_idx} (S/N {sn}): Marca '{marca_nombre}' no existe.")
-
-                                         continue
-
-                            else:
-
-                                marca_obj = Marca.objects.filter(nombre__iexact=marca_nombre).first()
+                            marca_obj = Marca.objects.filter(nombre__iexact=marca_nombre).first()
 
                         
 
