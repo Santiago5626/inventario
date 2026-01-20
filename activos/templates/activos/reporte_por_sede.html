@@ -93,23 +93,23 @@
 <div class="card border-0 shadow-sm">
     <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-hover table-striped mb-0" style="font-size: 0.85rem; white-space: nowrap;">
-                <thead class="table-dark">
+            <table class="table table-hover align-middle mb-0 table-minimal">
+                <thead>
                     <tr>
-                        <th>Item</th>
+                        <th class="ps-4">Item</th>
                         <th>Activo</th>
                         <th>Marca</th>
                         <th>S/N</th>
                         <th>Zona</th>
                         <th>Categoría</th>
                         <th>Estado</th>
-                        <th>Fecha Creación</th>
+                        <th class="text-end pe-4">Fecha Creación</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for activo in activos %}
                     <tr>
-                        <td>{{ activo.item }}</td>
+                        <td class="ps-4">{{ activo.item }}</td>
                         <td>{{ activo.activo }}</td>
                         <td>{{ activo.marca|default:"-" }}</td>
                         <td>{{ activo.sn|default:"-" }}</td>
@@ -121,7 +121,7 @@
                                 {{ activo.estado|title }}
                             </span>
                         </td>
-                        <td>{{ activo.fecha_creacion|date:"d/m/Y" }}</td>
+                        <td class="text-end pe-4">{{ activo.fecha_creacion|date:"d/m/Y" }}</td>
                     </tr>
                     {% empty %}
                     <tr>
