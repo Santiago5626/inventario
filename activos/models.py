@@ -12,6 +12,7 @@ class Zona(models.Model):
     class Meta:
         verbose_name = "Zona"
         verbose_name_plural = "Zonas"
+        ordering = ['nombre']
 
 
 class Categoria(models.Model):
@@ -55,8 +56,8 @@ class Activo(models.Model):
     marca_old = models.CharField(max_length=100, blank=True, null=True, verbose_name="MARCA OLD")  # Campo temporal
     marca = models.ForeignKey('Marca', on_delete=models.SET_NULL, null=True, blank=True, verbose_name="MARCA")
     activo = models.CharField(max_length=100, blank=True, null=True, verbose_name="ACTIVO")
-    cargo = models.CharField(max_length=100, default="vendedor ambulante", verbose_name="CARGO")
-    estado = models.CharField(max_length=100, default="activo confirmado", verbose_name="ESTADO")
+    cargo = models.CharField(max_length=100, default="VENDEDOR AMBULANTE", verbose_name="CARGO")
+    estado = models.CharField(max_length=100, default="ACTIVO CONFIRMADO", verbose_name="ESTADO")
     fecha_confirmacion = models.DateField(auto_now_add=True, verbose_name="FECHA DE CONFIRMACIÓN")
     responsable = models.CharField(max_length=100, blank=True, null=True, verbose_name="RESPONSABLE")
     identificacion = models.CharField(max_length=100, blank=True, null=True, verbose_name="IDENTIFICACIÓN")

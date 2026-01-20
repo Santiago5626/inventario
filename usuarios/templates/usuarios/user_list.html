@@ -54,10 +54,6 @@
                                     title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a href="{% url 'usuarios:user_reset_password' user.pk %}" class="btn btn-outline-info"
-                                    title="Resetear Contraseña">
-                                    <i class="fas fa-key"></i>
-                                </a>
                                 {% if user != request.user %}
                                 <a href="#" class="btn btn-outline-{{ user.is_active|yesno:'secondary,success' }}"
                                     title="{{ user.is_active|yesno:'Inactivar,Activar' }}"

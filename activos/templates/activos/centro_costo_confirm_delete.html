@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Centro de Costo{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-lg border-0 rounded-4">
+            <div class="card-body p-5 text-center">
+                <div class="mb-4">
+                    <span class="fa-stack fa-3x text-danger">
+                        <i class="fas fa-circle fa-stack-2x opacity-25"></i>
+                        <i class="fas fa-trash-alt fa-stack-1x"></i>
+                    </span>
+                </div>
+
+                <h3 class="fw-bold mb-3">¿Eliminar Centro de Costo?</h3>
+                <p class="text-muted mb-4">
+                    Estás a punto de eliminar el centro de costo <strong>"{{ object.nombre }}"</strong> ({{
+                    object.codigo }}). <br>
+                    Esta acción no se puede deshacer.
+                </p>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="fas fa-trash-alt me-2"></i>Sí, eliminar
+                        </button>
+                        <a href="{% url 'activos:centro_costo_list' %}" class="btn btn-light btn-lg">Cancelar</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

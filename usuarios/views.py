@@ -67,19 +67,7 @@ def user_update(request, pk):
         
     return render(request, 'usuarios/user_form.html', {'form': form})
 
-@login_required
-def user_reset_password(request, pk):
-    if request.user.rol != 'admin':
-        messages.error(request, 'No tienes permisos para resetear contraseñas.')
-        return redirect('activos:home')
-    user = Usuario.objects.get(pk=pk)
-    if request.method == 'POST':
-        new_password = request.POST.get('new_password')
-        user.set_password(new_password)
-        user.save()
-        messages.success(request, 'Contraseña reseteada exitosamente.')
-        return redirect('usuarios:user_list')
-    return render(request, 'usuarios/reset_password.html', {'user': user})
+
 
 @login_required
 def user_toggle_active(request, pk):

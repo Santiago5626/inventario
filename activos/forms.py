@@ -24,30 +24,30 @@ class CategoriaForm(forms.ModelForm):
 class ActivoForm(forms.ModelForm):
     ESTADO_CHOICES_CREATE = [
         ('', ''),
-        ('activo confirmado', 'Activo Confirmado'),
-        ('asignado', 'Asignado'),
+        ('ACTIVO CONFIRMADO', 'Activo Confirmado'),
+        ('ASIGNADO', 'Asignado'),
     ]
     
     ESTADO_CHOICES_UPDATE = [
         ('', ''),
-        ('activo confirmado', 'Activo Confirmado'),
-        ('asignado', 'Asignado'),
-        ('dado de baja', 'Dado de Baja'),
+        ('ACTIVO CONFIRMADO', 'Activo Confirmado'),
+        ('ASIGNADO', 'Asignado'),
+        ('DADO DE BAJA', 'Dado de Baja'),
     ]
     
     CARGO_CHOICES = [
         ('', ''),
-        ('vendedor ambulante', 'Vendedor Ambulante'),
-        ('recaudador', 'Recaudador'),
-        ('vendedor tat', 'Vendedor TAT'),
-        ('administrativos', 'Administrativos'),
+        ('VENDEDOR AMBULANTE', 'Vendedor Ambulante'),
+        ('RECAUDADOR', 'Recaudador'),
+        ('VENDEDOR TAT', 'Vendedor TAT'),
+        ('ADMINISTRATIVOS', 'Administrativos'),
     ]
 
     OPERADOR_CHOICES = [
         ('', ''),
-        ('Tigo', 'Tigo'),
-        ('Movistar', 'Movistar'),
-        ('Claro', 'Claro'),
+        ('TIGO', 'Tigo'),
+        ('MOVISTAR', 'Movistar'),
+        ('CLARO', 'Claro'),
     ]
 
     class CentroCostoCodigoChoiceField(forms.ModelChoiceField):
@@ -137,7 +137,7 @@ class ActivoForm(forms.ModelForm):
             'iccid': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ICCID', 'id': 'id_iccid'}),
             'operador': forms.Select(attrs={'class': 'form-select select2-basic', 'id': 'id_operador', 'data-placeholder': 'Seleccione un operador'}),
             'mac_superflex': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'MAC Superflex'}),
-            'activo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del activo'}),
+            'activo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Número de activo'}),
             'punto_venta': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Punto de venta'}),
             'fecha_salida_bodega': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
         }
@@ -152,13 +152,13 @@ class ActivoForm(forms.ModelForm):
             self.fields['estado'].widget.choices = self.ESTADO_CHOICES_UPDATE
         else:
             self.fields['estado'].widget.choices = self.ESTADO_CHOICES_CREATE
-            self.fields['estado'].initial = 'activo confirmado'
+            self.fields['estado'].initial = 'ACTIVO CONFIRMADO'
         
         # Configurar choices para cargo
         self.fields['cargo'].widget = forms.Select(attrs={'class': 'form-select select2-basic'})
         self.fields['cargo'].widget.choices = self.CARGO_CHOICES
         self.fields['cargo'].widget.choices = self.CARGO_CHOICES
-        self.fields['cargo'].initial = 'vendedor ambulante'
+        self.fields['cargo'].initial = 'VENDEDOR AMBULANTE'
         
         # Configurar choices para operador
         self.fields['operador'].widget.choices = self.OPERADOR_CHOICES
@@ -269,8 +269,8 @@ class ActivoForm(forms.ModelForm):
         
         # Actualizar estado basado en documento y nombres
         if instance.documento and instance.nombres_apellidos:
-            if instance.estado == 'activo confirmado':
-                instance.estado = 'asignado'
+            if instance.estado == 'ACTIVO CONFIRMADO':
+                instance.estado = 'ASIGNADO'
         
         if commit:
             instance.save()

@@ -35,6 +35,12 @@ urlpatterns = [
     path('zonas/<int:pk>/editar/', views.ZonaUpdateView.as_view(), name='zona_update'),
     path('zonas/<int:pk>/eliminar/', views.ZonaDeleteView.as_view(), name='zona_delete'),
 
+    # Centros de Costo
+    path('centros-costo/', views.CentroCostoListView.as_view(), name='centro_costo_list'),
+    path('centros-costo/crear/', views.CentroCostoCreateView.as_view(), name='centro_costo_create'),
+    path('centros-costo/<int:pk>/editar/', views.CentroCostoUpdateView.as_view(), name='centro_costo_update'),
+    path('centros-costo/<int:pk>/eliminar/', views.CentroCostoDeleteView.as_view(), name='centro_costo_delete'),
+
     # Categorías
     path('categorias/', views.CategoriaListView.as_view(), name='categoria_list'),
     # path('categorias/crear/', views.CategoriaCreateView.as_view(), name='categoria_create'),  # Deshabilitado - solo edición permitida

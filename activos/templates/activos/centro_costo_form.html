@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if object %}Editar{% else %}Crear{% endif %} Centro de Costo{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 border-0">
+                <h4 class="mb-0 fw-bold text-primary">
+                    <i class="fas fa-building me-2"></i>{% if object %}Editar{% else %}Crear{% endif %} Centro de Costo
+                </h4>
+            </div>
+            <div class="card-body">
+                {% include 'activos/partials/form_centro_costo.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
