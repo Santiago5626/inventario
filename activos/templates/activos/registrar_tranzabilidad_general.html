@@ -16,8 +16,9 @@
             </div>
 
             <div class="form-group mb-3">
-                <label for="tipo" class="form-label">Tipo de Tranzabilidad</label>
-                <select name="tipo" class="form-control" required>
+                <label for="tipo" class="form-label fw-bold">Tipo de Acción</label>
+                <select name="tipo" id="id_tipo" class="form-select select2-basic" data-placeholder="Seleccione tipo de acción" required>
+                    <option value="">Seleccione una opción</option>
                     <option value="ingreso">Ingreso</option>
                     <option value="salida">Salida</option>
                     <option value="transferencia">Transferencia</option>
@@ -25,26 +26,22 @@
                 </select>
             </div>
             <div class="form-group mb-3">
-                <label for="zona_origen" class="form-label">Zona Origen</label>
-                <select name="zona_origen" class="form-control">
+                <label for="zona_origen" class="form-label fw-bold">Zona Origen</label>
+                <select name="zona_origen" id="id_zona_origen" class="form-select select2-basic" data-placeholder="Seleccione zona origen">
                     <option value="">Ninguna</option>
                     {% for zona in zonas %}
-                    <option value="{{ zona }}">{{ zona }}</option>
+                    <option value="{{ zona.nombre }}">{{ zona.nombre }}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="form-group mb-3">
-                <label for="zona_destino" class="form-label">Zona Destino</label>
-                <select name="zona_destino" class="form-control">
+                <label for="zona_destino" class="form-label fw-bold">Zona Destino</label>
+                <select name="zona_destino" id="id_zona_destino" class="form-select select2-basic" data-placeholder="Seleccione zona destino">
                     <option value="">Ninguna</option>
                     {% for zona in zonas %}
-                    <option value="{{ zona }}">{{ zona }}</option>
+                    <option value="{{ zona.nombre }}">{{ zona.nombre }}</option>
                     {% endfor %}
                 </select>
-            </div>
-            <div class="form-group mb-3">
-                <label for="estado_nuevo" class="form-label">Estado Nuevo</label>
-                <input type="text" name="estado_nuevo" class="form-control" placeholder="Ej. reparación, asignado">
             </div>
             <div class="form-group mb-3">
                 <label for="descripcion" class="form-label">Descripción</label>

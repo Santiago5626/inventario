@@ -28,11 +28,13 @@ from datetime import timedelta
 
 from django.utils import timezone
 
-from .models import Activo, Tranzabilidad, Historial, Zona, Categoria, Marca
+from .models import Activo, Tranzabilidad, Historial, Zona, Categoria, Marca, CentroCosto
 
 from .forms import ActivoForm, CategoriaForm, ImportarActivosForm
 
 import openpyxl
+from openpyxl.worksheet.datavalidation import DataValidation
+from openpyxl.workbook.defined_name import DefinedName
 
 
 
@@ -666,7 +668,7 @@ def descargar_plantilla(request):
 
                'ICCID', 'OPERADOR', 'MAC SUPERFLEX', 'MARCA', 'ACTIVO', 'CARGO', 'ESTADO', 
 
-               'FECHA CONFIRMACIÓN', 'RESPONSABLE', 'IDENTIFICACIÓN', 'ZONA', 
+               'RESPONSABLE', 'IDENTIFICACIÓN', 'ZONA', 
 
                'OBSERVACIÓN', 'PUNTO DE VENTA', 'CÓDIGO CENTRO COSTO', 'CENTRO COSTO PUNTO', 
 
@@ -699,6 +701,104 @@ def descargar_plantilla(request):
         column_letter = openpyxl.utils.get_column_letter(col_num)
 
         ws.column_dimensions[column_letter].width = 20
+
+    # --- DATA VALIDATION ---
+    # Create a hidden sheet for data
+    ws_data = wb.create_sheet("Datos")
+    ws_data.sheet_state = 'hidden'
+
+    # 1. Marcas
+    marcas = list(Marca.objects.values_list('nombre', flat=True))
+    for i, marca in enumerate(marcas, 1):
+        ws_data.cell(row=i, column=1, value=marca)
+    
+    # Define Named Range for Marcas
+    count_marcas = len(marcas) if marcas else 1
+    dn_marcas = DefinedName('ListMarcas', attr_text=f"'Datos'!$A$1:$A${count_marcas}")
+    wb.defined_names.add(dn_marcas)
+
+    # 2. Cargos
+    cargos = list(Activo.objects.values_list('cargo', flat=True).distinct())
+    # Convert DB values to upper
+    cargos = [c.upper() for c in cargos if c]
+    
+    if not cargos or True: # Force defaults if DB is empty OR to strict adhere to requirements
+        # Defaults from forms.py
+        defaults = ['VENDEDOR AMBULANTE', 'RECAUDADOR', 'VENDEDOR TAT', 'ADMINISTRATIVOS']
+        # Merge unique
+        cargos = sorted(list(set(cargos + defaults)))
+    
+    for i, cargo in enumerate(cargos, 1):
+        ws_data.cell(row=i, column=2, value=cargo)
+    
+    # Define Named Range for Cargos
+    count_cargos = len(cargos) if cargos else 1
+    dn_cargos = DefinedName('ListCargos', attr_text=f"'Datos'!$B$1:$B${count_cargos}")
+    wb.defined_names.add(dn_cargos)
+        
+    # 3. Operadores
+    operadores = list(Activo.objects.values_list('operador', flat=True).distinct())
+    # Uppercase and filter
+    operadores = [op.upper() for op in operadores if op and op.upper() != 'WOM']
+    
+    if not operadores or True:
+        # Defaults from forms.py (Minus WOM)
+        defaults = ['TIGO', 'MOVISTAR', 'CLARO']
+        operadores = sorted(list(set(operadores + defaults)))
+        
+    for i, op in enumerate(operadores, 1):
+        ws_data.cell(row=i, column=3, value=op)
+
+    # Define Named Range for Operadores
+    count_operadores = len(operadores) if operadores else 1
+    dn_operadores = DefinedName('ListOperadores', attr_text=f"'Datos'!$C$1:$C${count_operadores}")
+    wb.defined_names.add(dn_operadores)
+
+    # 4. Estados
+    estados = list(Activo.objects.values_list('estado', flat=True).distinct())
+    # Uppercase
+    estados = [e.upper() for e in estados if e]
+    
+    if not estados or True:
+        # Defaults from forms.py
+        defaults = ['ACTIVO CONFIRMADO', 'ASIGNADO', 'DADO DE BAJA']
+        estados = sorted(list(set(estados + defaults)))
+
+    for i, est in enumerate(estados, 1):
+        ws_data.cell(row=i, column=4, value=est)
+        
+    # Define Named Range for Estados
+    count_estados = len(estados) if estados else 1
+    dn_estados = DefinedName('ListEstados', attr_text=f"'Datos'!$D$1:$D${count_estados}")
+    wb.defined_names.add(dn_estados)
+
+    # 5. Categorias (Adding validation just in case)
+    categorias = list(Categoria.objects.values_list('nombre', flat=True))
+    for i, cat in enumerate(categorias, 1):
+        ws_data.cell(row=i, column=5, value=cat)
+
+    # Apply Validations using Named Ranges
+    # Note: formula1 must not be quoted for Named Ranges in some contexts, but usually simple string works.
+    
+    # Marca (Col J -> Index 10)
+    dv_marca = DataValidation(type="list", formula1="ListMarcas", allow_blank=True)
+    ws.add_data_validation(dv_marca)
+    dv_marca.add('J2:J1000')
+
+    # Cargo (Col L -> Index 12)
+    dv_cargo = DataValidation(type="list", formula1="ListCargos", allow_blank=True)
+    ws.add_data_validation(dv_cargo)
+    dv_cargo.add('L2:L1000')
+
+    # Estado (Col M -> Index 13)
+    dv_estado = DataValidation(type="list", formula1="ListEstados", allow_blank=True)
+    ws.add_data_validation(dv_estado)
+    dv_estado.add('M2:M1000')
+    
+    # Operador (Col H -> Index 8)
+    dv_operador = DataValidation(type="list", formula1="ListOperadores", allow_blank=True)
+    ws.add_data_validation(dv_operador)
+    dv_operador.add('H2:H1000')
 
 
 
@@ -810,43 +910,43 @@ def importar_activos(request):
 
                         iccid = safe_str(row[6])
 
-                        operador = str(row[7]).strip() if row[7] else None
+                        operador = str(row[7]).strip().upper() if row[7] else None
 
                         mac = safe_str(row[8])
 
                         nombre_activo = str(row[10]).strip() if row[10] else None
 
-                        cargo = str(row[11]).strip() if row[11] else "vendedor ambulante"
+                        cargo = str(row[11]).strip().upper() if row[11] else "VENDEDOR AMBULANTE"
 
-                        estado = str(row[12]).strip() if row[12] else "activo confirmado"
-
+                        estado = str(row[12]).strip().upper() if row[12] else "ACTIVO CONFIRMADO"
                         
-
                         # Lógica especial: nombres + activo confirmado = asignado
 
-                        if nombres and estado.lower() == 'activo confirmado':
+                        if nombres and estado == 'ACTIVO CONFIRMADO':
 
-                            estado = 'asignado'
+                            estado = 'ASIGNADO'
 
                             
 
-                        responsable = str(row[14]).strip() if row[14] else None
+                        # Indices shifted for columns after removed FECHA CONFIRMACION (was 13)
 
-                        identificacion = safe_str(row[15])
+                        responsable = str(row[13]).strip() if row[13] else None
 
-                        observacion = str(row[17]).strip() if row[17] else "Importado masivamente"
+                        identificacion = safe_str(row[14])
 
-                        punto_venta = str(row[18]).strip() if row[18] else None
+                        zona_txt = str(row[15]).strip() if row[15] else "Valledupar"
 
-                        codigo_centro = safe_str(row[19])
+                        observacion = str(row[16]).strip() if row[16] else "Importado masivamente"
 
-                        centro_punto = str(row[20]).strip() if row[20] else None
+                        punto_venta = str(row[17]).strip() if row[17] else None
+
+                        codigo_centro = safe_str(row[18])
+
+                        centro_punto = str(row[19]).strip() if row[19] else None
 
 
 
                         # Datos Relacionales (FKs)
-
-                        zona_txt = str(row[16]).strip() if row[16] else "Valledupar"
 
                         marca_nombre = str(row[9]).strip() if row[9] else None
 
@@ -875,6 +975,8 @@ def importar_activos(request):
                         if marca_nombre:
 
                             marca_obj = Marca.objects.filter(nombre__iexact=marca_nombre).first()
+                        
+                        categoria_obj = marca_obj.categoria if marca_obj else None
 
                         
 
@@ -2490,6 +2592,24 @@ class ZonaCreateView(LoginRequiredMixin, CreateView):
 
         return super().dispatch(request, *args, **kwargs)
 
+    def form_invalid(self, form):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+             # Construir mensaje de error amigable
+            error_msg = 'Error al guardar.'
+            if form.errors:
+                # Obtener el primer error encontrado
+                for field, errors in form.errors.items():
+                    error_msg = f"{errors[0]}"
+                    break
+            
+            return JsonResponse({
+                'success': False,
+                'title': 'No se pudo guardar',
+                'message': error_msg,
+                'icon': 'error'
+            }, status=400)
+        return super().form_invalid(form)
+
 
 
 class ZonaUpdateView(LoginRequiredMixin, UpdateView):
@@ -2523,6 +2643,28 @@ class ZonaUpdateView(LoginRequiredMixin, UpdateView):
             return redirect('activos:home')
 
         return super().dispatch(request, *args, **kwargs)
+
+    def form_invalid(self, form):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+             # Construir mensaje de error amigable
+            error_msg = 'Error al guardar.'
+            if form.errors:
+                # Obtener el primer error encontrado
+                for field, errors in form.errors.items():
+                    error_msg = f"{errors[0]}"
+                    break
+            
+            return JsonResponse({
+                'success': False,
+                'title': 'No se pudo guardar',
+                'message': error_msg,
+                'icon': 'error'
+            }, status=400)
+        return super().form_invalid(form)
+
+
+
+
 
 
 
@@ -2825,7 +2967,7 @@ class RegistrarTranzabilidadGeneralView(LoginRequiredMixin, CreateView):
 
     model = Tranzabilidad
 
-    fields = ['activo', 'tipo', 'zona_origen', 'zona_destino', 'estado_nuevo', 'descripcion']
+    fields = ['activo', 'tipo', 'zona_origen', 'zona_destino', 'descripcion']
 
     template_name = 'activos/registrar_tranzabilidad_general.html'
 
@@ -2861,9 +3003,9 @@ class RegistrarTranzabilidadGeneralView(LoginRequiredMixin, CreateView):
 
         context = super().get_context_data(**kwargs)
 
-        # Obtener zonas únicas de los activos para el datalist o select
+        # Obtener objetos Zona para los selects
 
-        context['zonas'] = Activo.objects.values_list('zona', flat=True).distinct()
+        context['zonas'] = Zona.objects.all()
 
         return context
 
@@ -2883,14 +3025,6 @@ class RegistrarTranzabilidadGeneralView(LoginRequiredMixin, CreateView):
 
         save_activo = False
 
-        if form.cleaned_data['estado_nuevo']:
-
-            activo.estado = form.cleaned_data['estado_nuevo']
-
-            save_activo = True
-
-
-
         if form.cleaned_data['zona_destino']:
 
             activo.zona = form.cleaned_data['zona_destino']
@@ -2909,3 +3043,112 @@ class RegistrarTranzabilidadGeneralView(LoginRequiredMixin, CreateView):
 
         return super().form_valid(form)
 
+class TranzabilidadListView(LoginRequiredMixin, ListView):
+    model = Tranzabilidad
+    template_name = 'activos/tranzabilidad_list.html'
+    context_object_name = 'tranzabilidad'
+    paginate_by = 20
+
+    def get_queryset(self):
+        return Tranzabilidad.objects.all().order_by('-fecha')
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.rol not in ['admin', 'logistica']:
+            messages.error(request, 'No tienes permisos para ver tranzabilidad.')
+            return redirect('activos:home')
+        return super().dispatch(request, *args, **kwargs)
+
+
+# Centro Costo CRUD
+
+class CentroCostoListView(LoginRequiredMixin, ListView):
+    model = CentroCosto
+    template_name = 'activos/centro_costo_list.html'
+    context_object_name = 'centros_costo'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.rol not in ['admin', 'logistica']:
+            messages.error(request, 'No tienes permisos para ver centros de costo.')
+            return redirect('activos:home')
+        return super().dispatch(request, *args, **kwargs)
+
+class CentroCostoCreateView(LoginRequiredMixin, CreateView):
+    model = CentroCosto
+    fields = '__all__'
+    template_name = 'activos/centro_costo_form.html'
+    success_url = reverse_lazy('activos:centro_costo_list')
+
+    def get_template_names(self):
+        if self.request.GET.get('modal'):
+            return ['activos/partials/form_centro_costo.html']
+        return [self.template_name]
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.rol not in ['admin', 'logistica']:
+            messages.error(request, 'No tienes permisos para crear centros de costo.')
+            return redirect('activos:home')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_invalid(self, form):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+             # Construir mensaje de error amigable
+            error_msg = 'Error al guardar.'
+            if form.errors:
+                # Obtener el primer error encontrado
+                for field, errors in form.errors.items():
+                    error_msg = f"{errors[0]}"
+                    break
+            
+            return JsonResponse({
+                'success': False,
+                'title': 'No se pudo guardar',
+                'message': error_msg,
+                'icon': 'error'
+            }, status=400)
+        return super().form_invalid(form)
+
+class CentroCostoUpdateView(LoginRequiredMixin, UpdateView):
+    model = CentroCosto
+    fields = '__all__'
+    template_name = 'activos/centro_costo_form.html'
+    success_url = reverse_lazy('activos:centro_costo_list')
+
+    def get_template_names(self):
+        if self.request.GET.get('modal'):
+            return ['activos/partials/form_centro_costo.html']
+        return [self.template_name]
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.rol not in ['admin', 'logistica']:
+            messages.error(request, 'No tienes permisos para editar centros de costo.')
+            return redirect('activos:home')
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_invalid(self, form):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+             # Construir mensaje de error amigable
+            error_msg = 'Error al guardar.'
+            if form.errors:
+                # Obtener el primer error encontrado
+                for field, errors in form.errors.items():
+                    error_msg = f"{errors[0]}"
+                    break
+            
+            return JsonResponse({
+                'success': False,
+                'title': 'No se pudo guardar',
+                'message': error_msg,
+                'icon': 'error'
+            }, status=400)
+        return super().form_invalid(form)
+
+class CentroCostoDeleteView(LoginRequiredMixin, DeleteView):
+    model = CentroCosto
+    template_name = 'activos/centro_costo_confirm_delete.html'
+    success_url = reverse_lazy('activos:centro_costo_list')
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.rol not in ['admin', 'logistica']:
+            messages.error(request, 'No tienes permisos para eliminar centros de costo.')
+            return redirect('activos:home')
+        return super().dispatch(request, *args, **kwargs)
