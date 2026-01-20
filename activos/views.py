@@ -2984,13 +2984,17 @@ class RegistrarTranzabilidadGeneralView(LoginRequiredMixin, CreateView):
 
     def dispatch(self, request, *args, **kwargs):
 
-        if request.user.rol not in ['admin', 'logistica']:
+        # Llamar a super primero para que LoginRequiredMixin maneje la autenticación
+
+        response = super().dispatch(request, *args, **kwargs)
+
+        if request.user.is_authenticated and request.user.rol not in ['admin', 'logistica']:
 
             messages.error(request, 'No tienes permisos para registrar tranzabilidad.')
 
             return redirect('activos:home')
 
-        return super().dispatch(request, *args, **kwargs)
+        return response
 
     
 
