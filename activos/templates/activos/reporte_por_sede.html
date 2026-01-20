@@ -38,7 +38,7 @@
                     <select class="form-select form-select-sm" id="zona" name="zona">
                         <option value="">Todas las zonas</option>
                         {% for zona in zonas %}
-                        <option value="{{ zona }}" {% if filtro_zona==zona %}selected{% endif %}>{{ zona }}</option>
+                        <option value="{{ zona }}" {% if filtro_zona == zona %}selected{% endif %}>{{ zona }}</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -48,7 +48,7 @@
                     <select class="form-select form-select-sm" id="categoria" name="categoria">
                         <option value="">Todas las categorías</option>
                         {% for categoria in categorias %}
-                        <option value="{{ categoria.id }}" {% if filtro_categoria==categoria.id %}selected{% endif %}>
+                        <option value="{{ categoria.id }}" {% if filtro_categoria == categoria.id %}selected{% endif %}>
                             {{ categoria.nombre }}
                         </option>
                         {% endfor %}
@@ -60,7 +60,7 @@
                     <select class="form-select form-select-sm" id="estado" name="estado">
                         <option value="">Todos los estados</option>
                         {% for estado in estados %}
-                        <option value="{{ estado }}" {% if filtro_estado==estado %}selected{% endif %}>
+                        <option value="{{ estado }}" {% if filtro_estado == estado %}selected{% endif %}>
                             {{ estado|title }}
                         </option>
                         {% endfor %}
