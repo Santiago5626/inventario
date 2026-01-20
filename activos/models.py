@@ -160,3 +160,16 @@ class Historial(models.Model):
     class Meta:
         verbose_name = "Historial"
         verbose_name_plural = "Historiales"
+
+
+class CentroCosto(models.Model):
+    codigo = models.CharField(max_length=20, unique=True, verbose_name="Código")
+    nombre = models.CharField(max_length=100, verbose_name="Centro de Costo")
+
+    def __str__(self):
+        return f"{self.codigo} - {self.nombre}"
+
+    class Meta:
+        verbose_name = "Centro de Costo"
+        verbose_name_plural = "Centros de Costo"
+        ordering = ['nombre']

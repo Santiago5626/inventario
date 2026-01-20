@@ -2576,71 +2576,73 @@ class CategoriaListView(LoginRequiredMixin, ListView):
 
 
 
-class CategoriaCreateView(LoginRequiredMixin, CreateView):
+# VISTA DESHABILITADA - Solo se permite editar categorías existentes, no crear nuevas
+# class CategoriaCreateView(LoginRequiredMixin, CreateView):
+# 
+#     model = Categoria
+# 
+#     form_class = CategoriaForm
+# 
+#     template_name = 'activos/category_form.html'
+# 
+#     success_url = reverse_lazy('activos:categoria_list')
+# 
+# 
+# 
+#     def get_template_names(self):
+# 
+#         if self.request.GET.get('modal'):
+# 
+#             return ['activos/partials/form_categoria.html']
+# 
+#         return [self.template_name]
+# 
+# 
+# 
+#     def dispatch(self, request, *args, **kwargs):
+# 
+#         if request.user.rol not in ['admin', 'logistica']:
+# 
+#             messages.error(request, 'No tienes permisos para crear categorías.')
+# 
+#             return redirect('activos:home')
+# 
+#         return super().dispatch(request, *args, **kwargs)
+# 
+#     
+# 
+#     def form_valid(self, form):
+# 
+#         # Guardar la categoría primero
+# 
+#         response = super().form_valid(form)
+# 
+#         
+# 
+#         # Procesar las marcas
+# 
+#         marca_nombres = self.request.POST.getlist('marca_nombre[]')
+# 
+#         
+# 
+#         for nombre in marca_nombres:
+# 
+#             if nombre.strip():  # Solo crear si el nombre no está vacío
+# 
+#                 Marca.objects.create(
+# 
+#                     nombre=nombre.strip(),
+# 
+#                     categoria=self.object
+# 
+#                 )
+# 
+#         
+# 
+#         messages.success(self.request, f'Categoría "{self.object.nombre}" creada exitosamente con {len([n for n in marca_nombres if n.strip()])} marca(s).')
+# 
+#         return response
 
-    model = Categoria
-
-    form_class = CategoriaForm
-
-    template_name = 'activos/category_form.html'
-
-    success_url = reverse_lazy('activos:categoria_list')
-
-
-
-    def get_template_names(self):
-
-        if self.request.GET.get('modal'):
-
-            return ['activos/partials/form_categoria.html']
-
-        return [self.template_name]
-
-
-
-    def dispatch(self, request, *args, **kwargs):
-
-        if request.user.rol not in ['admin', 'logistica']:
-
-            messages.error(request, 'No tienes permisos para crear categorías.')
-
-            return redirect('activos:home')
-
-        return super().dispatch(request, *args, **kwargs)
-
-    
-
-    def form_valid(self, form):
-
-        # Guardar la categoría primero
-
-        response = super().form_valid(form)
-
-        
-
-        # Procesar las marcas
-
-        marca_nombres = self.request.POST.getlist('marca_nombre[]')
-
-        
-
-        for nombre in marca_nombres:
-
-            if nombre.strip():  # Solo crear si el nombre no está vacío
-
-                Marca.objects.create(
-
-                    nombre=nombre.strip(),
-
-                    categoria=self.object
-
-                )
-
-        
-
-        messages.success(self.request, f'Categoría "{self.object.nombre}" creada exitosamente con {len([n for n in marca_nombres if n.strip()])} marca(s).')
-
-        return response
 
 
 
@@ -2752,25 +2754,27 @@ class CategoriaUpdateView(LoginRequiredMixin, UpdateView):
 
 
 
-class CategoriaDeleteView(LoginRequiredMixin, DeleteView):
+# VISTA DESHABILITADA - Solo se permite editar categorías existentes, no eliminarlas
+# class CategoriaDeleteView(LoginRequiredMixin, DeleteView):
+# 
+#     model = Categoria
+# 
+#     template_name = 'activos/category_confirm_delete.html'
+# 
+#     success_url = reverse_lazy('activos:categoria_list')
+# 
+# 
+# 
+#     def dispatch(self, request, *args, **kwargs):
+# 
+#         if request.user.rol not in ['admin', 'logistica']:
+# 
+#             messages.error(request, 'No tienes permisos para eliminar categorías.')
+# 
+#             return redirect('activos:home')
+# 
+#         return super().dispatch(request, *args, **kwargs)
 
-    model = Categoria
-
-    template_name = 'activos/category_confirm_delete.html'
-
-    success_url = reverse_lazy('activos:categoria_list')
-
-
-
-    def dispatch(self, request, *args, **kwargs):
-
-        if request.user.rol not in ['admin', 'logistica']:
-
-            messages.error(request, 'No tienes permisos para eliminar categorías.')
-
-            return redirect('activos:home')
-
-        return super().dispatch(request, *args, **kwargs)
 
 
 

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib import admin
-from .models import Activo, Historial, Categoria, Marca
+from .models import Activo, Historial, Categoria, Marca, CentroCosto
 
 class MarcaInline(admin.TabularInline):
     model = Marca
@@ -74,3 +74,9 @@ class HistorialAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         return request.user.groups.filter(name='Administrador').exists()
+
+@admin.register(CentroCosto)
+class CentroCostoAdmin(admin.ModelAdmin):
+    list_display = ('codigo', 'nombre')
+    search_fields = ('codigo', 'nombre')
+    ordering = ('codigo',)

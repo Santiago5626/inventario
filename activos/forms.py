@@ -1,5 +1,5 @@
 from django import forms
-from .models import Activo, Zona, Categoria, Marca
+from .models import Activo, Zona, Categoria, Marca, CentroCosto
 from django.utils import timezone
 
 
@@ -23,17 +23,20 @@ class CategoriaForm(forms.ModelForm):
 
 class ActivoForm(forms.ModelForm):
     ESTADO_CHOICES_CREATE = [
+        ('', ''),
         ('activo confirmado', 'Activo Confirmado'),
         ('asignado', 'Asignado'),
     ]
     
     ESTADO_CHOICES_UPDATE = [
+        ('', ''),
         ('activo confirmado', 'Activo Confirmado'),
         ('asignado', 'Asignado'),
         ('dado de baja', 'Dado de Baja'),
     ]
     
     CARGO_CHOICES = [
+        ('', ''),
         ('vendedor ambulante', 'Vendedor Ambulante'),
         ('recaudador', 'Recaudador'),
         ('vendedor tat', 'Vendedor TAT'),
@@ -41,11 +44,43 @@ class ActivoForm(forms.ModelForm):
     ]
 
     OPERADOR_CHOICES = [
-        ('', 'Seleccione un operador'),
+        ('', ''),
         ('Tigo', 'Tigo'),
         ('Movistar', 'Movistar'),
         ('Claro', 'Claro'),
     ]
+
+    class CentroCostoCodigoChoiceField(forms.ModelChoiceField):
+        def label_from_instance(self, obj):
+            return obj.codigo
+
+    class CentroCostoNombreChoiceField(forms.ModelChoiceField):
+        def label_from_instance(self, obj):
+            return obj.nombre
+
+    centro_costo_codigo_select = CentroCostoCodigoChoiceField(
+        queryset=CentroCosto.objects.all(),
+        label="Cód. Centro Costo",
+        required=False,
+        empty_label="",  # Empty string for Select2 placeholder compatibility
+        widget=forms.Select(attrs={
+            'class': 'form-select select2-basic', 
+            'id': 'id_centro_costo_codigo_select',
+            'data-placeholder': 'Seleccione un código'
+        })
+    )
+
+    centro_costo_nombre_select = CentroCostoNombreChoiceField(
+        queryset=CentroCosto.objects.all(),
+        label="Nombre Centro Costo",
+        required=False,
+        empty_label="",  # Empty string for Select2 placeholder compatibility
+        widget=forms.Select(attrs={
+            'class': 'form-select select2-basic', 
+            'id': 'id_centro_costo_nombre_select',
+            'data-placeholder': 'Seleccione un nombre'
+        })
+    )
     
     class Meta:
         model = Activo
@@ -62,10 +97,10 @@ class ActivoForm(forms.ModelForm):
                 'list': 'nombres-list'
             }),
             'categoria': forms.Select(attrs={'class': 'form-select', 'id': 'id_categoria'}),
-            'marca': forms.Select(attrs={'class': 'form-select', 'id': 'id_marca'}),
-            'zona': forms.Select(attrs={'class': 'form-select'}),
-            'cargo': forms.Select(attrs={'class': 'form-select'}),
-            'estado': forms.Select(attrs={'class': 'form-select'}),
+            'marca': forms.Select(attrs={'class': 'form-select select2-basic', 'id': 'id_marca', 'data-placeholder': 'Seleccione una marca'}),
+            'zona': forms.Select(attrs={'class': 'form-select select2-basic', 'data-placeholder': 'Seleccione una zona'}),
+            'cargo': forms.Select(attrs={'class': 'form-select select2-basic', 'data-placeholder': 'Seleccione un cargo'}),
+            'estado': forms.Select(attrs={'class': 'form-select select2-basic', 'data-placeholder': 'Seleccione un estado'}),
             'responsable': forms.TextInput(attrs={
                 'class': 'form-control',
                 'placeholder': 'Nombre del responsable'
@@ -75,16 +110,21 @@ class ActivoForm(forms.ModelForm):
                 'placeholder': 'Identificación del responsable',
                 'list': 'identificacion-list'
             }),
-            'codigo_centro_costo': forms.TextInput(attrs={
+            'identificacion': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'Código del centro de costo',
-                'list': 'codigo-centro-list'
+                'placeholder': 'Identificación del responsable',
+                'list': 'identificacion-list'
             }),
-            'centro_costo_punto': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'Nombre del centro de costo',
-                'list': 'nombre-centro-list'
-            }),
+            # 'codigo_centro_costo': forms.TextInput(attrs={
+            #     'class': 'form-control',
+            #     'placeholder': 'Código del centro de costo',
+            #     'list': 'codigo-centro-list'
+            # }),
+            # 'centro_costo_punto': forms.TextInput(attrs={
+            #     'class': 'form-control',
+            #     'placeholder': 'Nombre del centro de costo',
+            #     'list': 'nombre-centro-list'
+            # }),
             'observacion': forms.Textarea(attrs={
                 'class': 'form-control',
                 'placeholder': 'Ingrese observaciones',
@@ -95,7 +135,7 @@ class ActivoForm(forms.ModelForm):
             'imei2': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'IMEI 2'}),
             'sn': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Número de serie'}),
             'iccid': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'ICCID', 'id': 'id_iccid'}),
-            'operador': forms.Select(attrs={'class': 'form-select', 'id': 'id_operador'}),
+            'operador': forms.Select(attrs={'class': 'form-select select2-basic', 'id': 'id_operador', 'data-placeholder': 'Seleccione un operador'}),
             'mac_superflex': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'MAC Superflex'}),
             'activo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre del activo'}),
             'punto_venta': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Punto de venta'}),
@@ -115,7 +155,7 @@ class ActivoForm(forms.ModelForm):
             self.fields['estado'].initial = 'activo confirmado'
         
         # Configurar choices para cargo
-        self.fields['cargo'].widget = forms.Select(attrs={'class': 'form-select'})
+        self.fields['cargo'].widget = forms.Select(attrs={'class': 'form-select select2-basic'})
         self.fields['cargo'].widget.choices = self.CARGO_CHOICES
         self.fields['cargo'].widget.choices = self.CARGO_CHOICES
         self.fields['cargo'].initial = 'vendedor ambulante'
@@ -125,7 +165,7 @@ class ActivoForm(forms.ModelForm):
         
         # Configurar zona como select con las zonas existentes
         zonas = Zona.objects.all().values_list('nombre', 'nombre')
-        self.fields['zona'].widget = forms.Select(attrs={'class': 'form-select'})
+        self.fields['zona'].widget = forms.Select(attrs={'class': 'form-select select2-basic', 'data-placeholder': 'Seleccione una zona'})
         self.fields['zona'].widget.choices = [('', '')] + list(zonas)
         
         # Configurar categoría para que no muestre "----"
@@ -140,15 +180,26 @@ class ActivoForm(forms.ModelForm):
             self.fields['marca'].queryset = Marca.objects.all()
         
         # Configurar marca para que no muestre "----" si hay opciones
+        # Configurar marca para que no muestre "----" si hay opciones
         if self.fields['marca'].queryset.exists():
-            self.fields['marca'].empty_label = "Seleccione una marca"
+            self.fields['marca'].empty_label = "" # Empty string for Select2 placeholder
+
+        if self.instance.pk and self.instance.codigo_centro_costo:
+            try:
+                cc = CentroCosto.objects.filter(codigo=self.instance.codigo_centro_costo).first()
+                if cc:
+                    self.fields['centro_costo_codigo_select'].initial = cc
+                    self.fields['centro_costo_nombre_select'].initial = cc
+            except Exception:
+                pass
         
         # Hacer obligatorios todos los campos de la sección "Datos del Activo"
         # Hacer obligatorios todos los campos de la sección "Datos del Activo" y asignación inicial
         campos_obligatorios = [
             'categoria', 'marca', 'activo', 'sn', 
             'imei1', 'imei2', 'estado', 'zona',
-            'responsable', 'identificacion'
+            'responsable', 'identificacion', 
+            'centro_costo_codigo_select', 'centro_costo_nombre_select'
         ]
         
         for campo in campos_obligatorios:
@@ -160,8 +211,9 @@ class ActivoForm(forms.ModelForm):
         if is_assignment and self.instance.pk:
             # Campos obligatorios para asignación según requerimiento
             campos_obligatorios_asignacion = [
-                'cargo', 'nombres_apellidos', 'codigo_centro_costo', 
-                'centro_costo_punto', 'punto_venta', 'iccid', 'operador'
+                'cargo', 'nombres_apellidos', 
+                'centro_costo_codigo_select', 'centro_costo_nombre_select', 
+                'punto_venta', 'iccid', 'operador'
             ]
             for campo in campos_obligatorios_asignacion:
                 if campo in self.fields:
@@ -170,7 +222,8 @@ class ActivoForm(forms.ModelForm):
             # Campos que siempre deben ser editables durante una asignación/reasignación
             assignment_fields = [
                 'documento', 'nombres_apellidos', 'responsable', 'identificacion',
-                'zona', 'cargo', 'codigo_centro_costo', 'centro_costo_punto',
+                'zona', 'cargo', 
+                'centro_costo_codigo_select', 'centro_costo_nombre_select',
                 'punto_venta', 'observacion', 'estado', 'iccid', 'operador'
             ]
             
@@ -200,6 +253,15 @@ class ActivoForm(forms.ModelForm):
     
     def save(self, commit=True):
         instance = super().save(commit=False)
+        
+        # Actualizar campos de texto desde el select de Centro de Costo (usamos cualquiera de los dos)
+        cc = self.cleaned_data.get('centro_costo_codigo_select')
+        if not cc:
+            cc = self.cleaned_data.get('centro_costo_nombre_select')
+            
+        if cc:
+            instance.codigo_centro_costo = cc.codigo
+            instance.centro_costo_punto = cc.nombre
         
         # Establecer fecha_confirmacion si es un nuevo activo
         if not instance.pk:

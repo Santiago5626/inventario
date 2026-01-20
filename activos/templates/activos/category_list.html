@@ -6,9 +6,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1 class="fw-bold"><i class="fas fa-layer-group me-2"></i>Gestión de Categorías</h1>
-    <a href="{% url 'activos:categoria_create' %}" class="btn btn-primary modal-trigger" data-title="Nueva Categoría">
-        <i class="fas fa-plus me-2"></i>Nueva Categoría
-    </a>
+    <!-- Botón de crear categoría deshabilitado - solo edición permitida -->
 </div>
 
 {% if categorias %}
@@ -44,15 +42,11 @@
                         </td>
                         <td class="text-center">
                             <a href="{% url 'activos:categoria_update' categoria.pk %}"
-                                class="btn btn-sm btn-outline-primary me-1 modal-trigger" data-title="Editar Categoría"
+                                class="btn btn-sm btn-outline-primary modal-trigger" data-title="Editar Categoría"
                                 title="Editar">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a href="#" class="btn btn-sm btn-outline-danger" title="Eliminar"
-                                data-url="{% url 'activos:categoria_delete' categoria.pk %}"
-                                onclick="const url = this.getAttribute('data-url'); confirmarAccion(event, '¿Eliminar categoría?', 'Se eliminará la categoría {{ categoria.nombre|escapejs }} y TODAS sus marcas asociadas.', 'error', function(){ window.location.href = url; })">
-                                <i class="fas fa-trash"></i>
-                            </a>
+                            <!-- Botón de eliminar deshabilitado - solo edición permitida -->
                         </td>
                     </tr>
                     {% endfor %}
@@ -64,8 +58,7 @@
 {% else %}
 <div class="alert alert-info">
     <i class="fas fa-info-circle me-2"></i>
-    No hay categorías registradas. <a href="{% url 'activos:categoria_create' %}" class="alert-link">Crear la primera
-        categoría</a>
+    No hay categorías registradas.
 </div>
 {% endif %}
 

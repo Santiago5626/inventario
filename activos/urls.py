@@ -37,7 +37,7 @@ urlpatterns = [
 
     # Categorías
     path('categorias/', views.CategoriaListView.as_view(), name='categoria_list'),
-    path('categorias/crear/', views.CategoriaCreateView.as_view(), name='categoria_create'),
+    # path('categorias/crear/', views.CategoriaCreateView.as_view(), name='categoria_create'),  # Deshabilitado - solo edición permitida
     path('categorias/<int:pk>/editar/', views.CategoriaUpdateView.as_view(), name='categoria_update'),
-    path('categorias/<int:pk>/eliminar/', views.CategoriaDeleteView.as_view(), name='categoria_delete'),
+    # path('categorias/<int:pk>/eliminar/', views.CategoriaDeleteView.as_view(), name='categoria_delete'),  # Deshabilitado - solo edición permitida
 ]

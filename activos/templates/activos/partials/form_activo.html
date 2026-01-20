@@ -122,21 +122,30 @@
             {% endif %}
         </div>
 
+
+
+        <style>
+            /* Ajustes adicionales para select2 en modal si es necesario */
+            .select2-container {
+                z-index: 9999;
+            }
+        </style>
+
         <!-- Fila 3 Asignación: Centro de Costo (Código y Nombre) -->
         <div class="col-md-6">
-            <label for="{{ form.codigo_centro_costo.id_for_label }}" class="form-label fw-bold">Cód. Centro
+            <label for="{{ form.centro_costo_codigo_select.id_for_label }}" class="form-label fw-bold">Cód. Centro
                 Costo</label>
-            {{ form.codigo_centro_costo }}
-            {% if form.codigo_centro_costo.errors %}
-            <div class="text-danger small">{{ form.codigo_centro_costo.errors.0 }}</div>
+            {{ form.centro_costo_codigo_select }}
+            {% if form.centro_costo_codigo_select.errors %}
+            <div class="text-danger small">{{ form.centro_costo_codigo_select.errors.0 }}</div>
             {% endif %}
         </div>
         <div class="col-md-6">
-            <label for="{{ form.centro_costo_punto.id_for_label }}" class="form-label fw-bold">Nombre Centro
+            <label for="{{ form.centro_costo_nombre_select.id_for_label }}" class="form-label fw-bold">Nombre Centro
                 Costo</label>
-            {{ form.centro_costo_punto }}
-            {% if form.centro_costo_punto.errors %}
-            <div class="text-danger small">{{ form.centro_costo_punto.errors.0 }}</div>
+            {{ form.centro_costo_nombre_select }}
+            {% if form.centro_costo_nombre_select.errors %}
+            <div class="text-danger small">{{ form.centro_costo_nombre_select.errors.0 }}</div>
             {% endif %}
         </div>
 
@@ -239,10 +248,69 @@
         {% endfor %}
 </datalist>
 
+
+<!-- Scripts for Select2 -->
+<!-- jQuery and Select2 are loaded in base.html -->
+
 <script>
     // Inicialización del script de formulario (inmediata si es cargado dinámicamente)
     (function () {
         'use strict'
+
+        // Inicializar Select2
+        // Usamos setTimeout para asegurar que el DOM del modal esté listo y no bloquee renderizado
+        setTimeout(function () {
+            var $selects = $('.select2-basic');
+            if ($selects.length > 0) {
+                $selects.each(function () {
+                    var $this = $(this);
+
+                    // Configuración base
+                    var options = {
+                        width: '100%',
+                        placeholder: $this.data('placeholder') || "Seleccione una opción",
+                        allowClear: true,
+                        minimumResultsForSearch: Infinity, // Deshabilitar búsqueda para todos todos
+                        theme: 'bootstrap-5'
+                    };
+
+                    // Inicializar
+                    if ($this.hasClass('select2-hidden-accessible')) {
+                        $this.select2('destroy');
+                    }
+                    $this.select2(options);
+                });
+                // Sincronización de Centro de Costo
+                var $codigoSelect = $('#id_centro_costo_codigo_select');
+                var $nombreSelect = $('#id_centro_costo_nombre_select');
+
+                function syncSelects(source, target) {
+                    var val = source.val();
+                    // Solo sincronizar si el valor destino es diferente para evitar bucles
+                    if (target.val() !== val) {
+                        target.val(val).trigger('change.select2');
+                    }
+                }
+
+                $codigoSelect.on('select2:select', function (e) {
+                    syncSelects($(this), $nombreSelect);
+                });
+
+                $codigoSelect.on('select2:unselect', function (e) {
+                    syncSelects($(this), $nombreSelect);
+                });
+
+                $nombreSelect.on('select2:select', function (e) {
+                    syncSelects($(this), $codigoSelect);
+                });
+
+                $nombreSelect.on('select2:unselect', function (e) {
+                    syncSelects($(this), $codigoSelect);
+                });
+            }
+        }, 100);
+
+
 
         // Filtrado dinámico de marcas por categoría
         const categoriaSelect = document.getElementById('id_categoria');
