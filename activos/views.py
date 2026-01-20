@@ -488,7 +488,7 @@ def exportar_excel(request):
 
                'ICCID', 'OPERADOR', 'MAC SUPERFLEX', 'MARCA', 'ACTIVO', 'CARGO', 'ESTADO', 
 
-               'FECHA CONFIRMACIÓN', 'RESPONSABLE', 'IDENTIFICACIÓN', 'ZONA', 
+               'RESPONSABLE', 'IDENTIFICACIÓN', 'ZONA', 
 
                'OBSERVACIÓN', 'PUNTO DE VENTA', 'CÓDIGO CENTRO COSTO', 'CENTRO COSTO PUNTO', 
 
@@ -545,8 +545,6 @@ def exportar_excel(request):
             activo.cargo or '',
 
             activo.estado or '',
-
-            activo.fecha_confirmacion.strftime('%d/%m/%Y') if activo.fecha_confirmacion else '',
 
             activo.responsable or '',
 

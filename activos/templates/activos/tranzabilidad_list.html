@@ -177,7 +177,7 @@
                                 data-id="{{ movimiento.id }}"
                                     data-fecha="{{ movimiento.fecha|date:'d/m/Y H:i:s' }}"
                                     data-tipo="{{ movimiento.get_tipo_display }}"
-                                    data-usuario="{{ movimiento.usuario.username }}"
+                                    data-usuario="{% if movimiento.usuario.first_name %}{{ movimiento.usuario.first_name }} {{ movimiento.usuario.last_name }}{% else %}{{ movimiento.usuario.username }}{% endif %}"
                                 data-descripcion="{{ movimiento.descripcion|default:'Sin descripción' }}"
                                 {% if movimiento.activo %}
                                     data-activo-nombre="{{ movimiento.activo.activo }}"
