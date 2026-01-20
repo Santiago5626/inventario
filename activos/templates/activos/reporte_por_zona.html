@@ -3,63 +3,138 @@
 {% block title %}Inventario por Zona{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <h1 class="mb-4">Inventario por Zona</h1>
-
-    <div class="card mb-4">
-        <a href="{% url 'activos:reporte_por_sede' %}" class="btn btn-outline-secondary w-100">
-            <i class="fas fa-times me-2"></i>Limpiar
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="fw-bold mb-1"><i class="fas fa-map-marker-alt me-2"></i>Inventario por Zona</h1>
+    </div>
+    <div>
+        <a href="{% url 'activos:exportar_excel' %}?{{ request.GET.urlencode }}" class="btn btn-success">
+            <i class="fas fa-file-excel me-2"></i>Exportar a Excel
         </a>
     </div>
-    </form>
-</div>
 </div>
 
-<div class="card">
-    <div class="card-body">
+<!-- Filtros -->
+<div class="collapse mb-4 {% if filtro_zona or filtro_categoria or filtro_estado %}show{% endif %}" id="filterCollapse">
+    <div class="card shadow-sm border-0 bg-light">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+
+                <div class="col-md-4">
+                    <label for="zona" class="form-label small fw-bold text-muted">Zona</label>
+                    <select class="form-select form-select-sm" id="zona" name="zona">
+                        <option value="">Todas las zonas</option>
+                        {% for zona in zonas %}
+                        <option value="{{ zona }}" {% if filtro_zona==zona %}selected{% endif %}>{{ zona }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="categoria" class="form-label small fw-bold text-muted">Categoría</label>
+                    <select class="form-select form-select-sm" id="categoria" name="categoria">
+                        <option value="">Todas las categorías</option>
+                        {% for categoria in categorias %}
+                        <option value="{{ categoria.id }}" {% if filtro_categoria==categoria.id %}selected{% endif %}>
+                            {{ categoria.nombre }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="estado" class="form-label small fw-bold text-muted">Estado</label>
+                    <select class="form-select form-select-sm" id="estado" name="estado">
+                        <option value="">Todos los estados</option>
+                        {% for estado in estados %}
+                        <option value="{{ estado }}" {% if filtro_estado==estado %}selected{% endif %}>
+                            {{ estado|title }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-12 d-flex justify-content-end gap-2">
+                    <a href="{% url 'activos:reporte_por_zona' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-times me-1"></i>Limpiar
+                    </a>
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="fas fa-search me-1"></i>Aplicar
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Botón de Filtros (pequeño, abajo a la izquierda) -->
+<div class="mb-3">
+    <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse"
+        data-bs-target="#filterCollapse" aria-expanded="false" aria-controls="filterCollapse">
+        <i class="fas fa-filter me-1"></i>Filtros
+    </button>
+</div>
+
+<!-- Resultados -->
+<div class="card shadow border-0">
+    <div class="card-body p-0">
         <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead class="table-dark">
+            <table class="table table-hover align-middle mb-0 table-minimal">
+                <thead>
                     <tr>
-                        <th>Item</th>
+                        <th class="ps-4">Item</th>
                         <th>Activo</th>
                         <th>Marca</th>
                         <th>Estado</th>
                         <th>Zona</th>
                         <th>Responsable</th>
-                        <th>Acciones</th>
+                        <th class="text-end pe-4">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for activo in activos %}
                     <tr>
-                        <td>{{ activo.item }}</td>
-                        <td>{{ activo.activo }}</td>
-                        <td>{{ activo.marca }}</td>
+                        <td class="ps-4">{{ activo.item }}</td>
+                        <td>
+                            <div class="d-flex flex-column">
+                                <span class="fw-bold text-dark small">{{ activo.activo }}</span>
+                            </div>
+                        </td>
+                        <td>{{ activo.marca|default:"-" }}</td>
                         <td>
                             <span
-                                class="badge bg-{% if 'asignado' in activo.estado|lower %}success{% elif 'bodega' in activo.estado|lower %}warning{% else %}secondary{% endif %}">
+                                class="badge {% if 'asignado' in activo.estado|lower %}bg-success{% elif 'bodega' in activo.estado|lower %}bg-warning{% elif 'baja' in activo.estado|lower %}bg-danger{% else %}bg-secondary{% endif %} bg-opacity-10 border rounded-pill px-2">
                                 {{ activo.estado }}
                             </span>
                         </td>
-                        <td>{{ activo.zona }}</td>
+                        <td>{{ activo.zona|default:"-" }}</td>
                         <td>{{ activo.responsable|default:"-" }}</td>
-                        <td>
-                            <a href="{% url 'activos:activo_detail' activo.pk %}"
-                                class="btn btn-sm btn-info text-white">
-                                <i class="fas fa-eye"></i>
+                        <td class="text-end pe-4">
+                            <a href="{% url 'activos:activo_detail' activo.pk %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye me-1"></i>Ver
                             </a>
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="text-center">No se encontraron activos.</td>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <div class="d-flex flex-column align-items-center">
+                                <div class="bg-light rounded-circle p-4 mb-3">
+                                    <i class="fas fa-search fa-2x text-muted opacity-50"></i>
+                                </div>
+                                <h5 class="fw-bold text-dark">No se encontraron resultados</h5>
+                                <p class="mb-0 small">Intenta ajustar los filtros de búsqueda.</p>
+                            </div>
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-</div>
+    <div class="card-footer bg-white border-0 py-3">
+        <small class="text-muted">Total de registros encontrados: <strong>{{ activos|length }}</strong></small>
+    </div>
 </div>
 {% endblock %}
