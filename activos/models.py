@@ -4,8 +4,7 @@ from django.conf import settings
 
 class Zona(models.Model):
     nombre = models.CharField(max_length=100, unique=True, verbose_name="Nombre de la Zona")
-    codigo = models.CharField(max_length=20, blank=True, null=True, verbose_name="Código")
-    fecha_creacion = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Creación")
+    codigo = models.CharField(max_length=20, unique=True, verbose_name="Código")
 
     def __str__(self):
         return self.nombre
