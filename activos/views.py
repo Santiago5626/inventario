@@ -2021,6 +2021,8 @@ class TranzabilidadListView(LoginRequiredMixin, ListView):
             )
 
         
+        # Ordenar por fecha descendente (más recientes primero)
+        queryset = queryset.order_by('-fecha')
 
         return queryset
 
@@ -3046,21 +3048,6 @@ class RegistrarTranzabilidadGeneralView(LoginRequiredMixin, CreateView):
         messages.success(self.request, 'Tranzabilidad registrada exitosamente.')
 
         return super().form_valid(form)
-
-class TranzabilidadListView(LoginRequiredMixin, ListView):
-    model = Tranzabilidad
-    template_name = 'activos/tranzabilidad_list.html'
-    context_object_name = 'tranzabilidad'
-    paginate_by = 20
-
-    def get_queryset(self):
-        return Tranzabilidad.objects.all().order_by('-fecha')
-
-    def dispatch(self, request, *args, **kwargs):
-        if request.user.rol not in ['admin', 'logistica']:
-            messages.error(request, 'No tienes permisos para ver tranzabilidad.')
-            return redirect('activos:home')
-        return super().dispatch(request, *args, **kwargs)
 
 
 # Centro Costo CRUD
