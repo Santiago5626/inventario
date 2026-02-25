@@ -12,9 +12,8 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'  # True por defecto para desar
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
-CSRF_TRUSTED_ORIGINS = ['https://inventario-6hyb.onrender.com']
-if os.environ.get('RENDER_EXTERNAL_HOSTNAME'):
-    CSRF_TRUSTED_ORIGINS.append(f'https://{os.environ.get("RENDER_EXTERNAL_HOSTNAME")}')
+csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+CSRF_TRUSTED_ORIGINS = csrf_origins.split(',') if csrf_origins else []
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
