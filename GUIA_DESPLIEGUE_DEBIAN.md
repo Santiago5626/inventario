@@ -1,6 +1,6 @@
 # Guía Completa de Despliegue: Sistema de Inventario en Debian
 
-Esta guía detalla el proceso realizado para desplegar el Sistema de Inventario de Activos PDA en una máquina virtual con Debian desde cero.
+Esta guía detalla el proceso realizado para desplegar el Sistema de Inventario de Activos PDA en una máquina virtual con Debian desde cero. Se incluyen explicaciones sobre la importancia de cada paso.
 
 ---
 
@@ -12,12 +12,17 @@ Se requiere una instalación limpia de Debian con acceso root.
    apt update && apt upgrade -y
    apt install git -y
    ```
+   > [!NOTE]
+   > Mantener el sistema actualizado previene fallos de seguridad y asegura que las librerías de Python se compilen correctamente.
 
-2. **Herramientas de red**: (Si no tienes IP en modo puente)
+2. **Herramientas de red (El reto del DHCP)**:
+   Si al cambiar a "Adaptador Puente" la máquina no recibe IP, es porque Debian no incluye el cliente DHCP por defecto en instalaciones mínimas.
    ```bash
    apt install isc-dhcp-client -y
    dhclient enp0s3
    ```
+   > [!IMPORTANT]
+   > Sin una IP en el rango de tu red local (192.168.x.x), el servidor no podrá ser visto por otros dispositivos (celulares, tablets o PCs).
 
 ---
 
@@ -29,19 +34,21 @@ Se requiere una instalación limpia de Debian con acceso root.
    cd /home/soporte/inventario
    ```
 
-2. **Instalación automatizada**:
-   Se utilizó el script `setup_linux.sh` modificado para incluir herramientas de compilación necesarias para Python 3.13:
+2. **Instalación de herramientas de compilación**:
+   Modificamos `setup_linux.sh` para incluir `build-essential`. Esto es vital porque la librería de PostgreSQL para Python (`psycopg2`) necesita compilar código en C durante la instalación.
    ```bash
    chmod +x setup_linux.sh
    ./setup_linux.sh
    ```
-   *Nota: El script instala Python, PostgreSQL y Nginx.*
 
-3. **Corrección de psycopg2**:
-   Para Python 3.13, se debe usar una versión compatible en `requirements.txt`:
+3. **Compatibilidad con Python 3.13**:
+   Debian Trixie usa Python 3.13. Las versiones antiguas de `psycopg2` fallan en este entorno.
+   *Solución aplicada en `requirements.txt`:*
    ```text
    psycopg2-binary>=2.9.10
    ```
+   > [!TIP]
+   > Siempre verifica que las librerías binarias sean compatibles con versiones muy recientes de Python para evitar errores de "Build wheel".
 
 ---
 
@@ -58,32 +65,23 @@ Se requiere una instalación limpia de Debian con acceso root.
    GRANT ALL PRIVILEGES ON DATABASE inventario_db TO admin;
    \q
    ```
+   > [!WARNING]
+   > Aunque usamos 'admin/admin' para pruebas, en un servidor expuesto a internet se deben usar contraseñas robustas.
 
 ---
 
 ## 4. Configuración de Django (.env)
 
-1. **Crear archivo de entorno**:
-   ```bash
-   cp .env.example .env
-   nano .env
-   ```
+1. **Variables críticas**:
+   - `DEBUG=True`: Útil durante el despliegue para ver errores, pero debe ser `False` en producción real.
+   - `ALLOWED_HOSTS=*`: Permite que cualquier IP acceda al sistema. Es necesario cuando la IP del servidor es asignada por DHCP y puede cambiar.
 
-2. **Variables críticas**:
-   ```env
-   DEBUG=True
-   SECRET_KEY=tu_clave_aleatoria
-   ALLOWED_HOSTS=*
-   DATABASE_URL=postgresql://admin:admin@localhost:5432/inventario_db
-   ```
-
-3. **Inicialización**:
+2. **Inicialización**:
    ```bash
    source venv/bin/activate
-   python manage.py makemigrations
+   python manage.py makemigrations activos
    python manage.py migrate
    python manage.py collectstatic --noinput
-   python manage.py createsuperuser
    ```
 
 ---
@@ -91,50 +89,23 @@ Se requiere una instalación limpia de Debian con acceso root.
 ## 5. Puesta en Producción Local
 
 ### Gunicorn (Systemd)
-Crea el archivo `/etc/systemd/system/inventario.service`:
-```ini
-[Unit]
-Description=Gunicorn daemon for Inventario
-After=network.target
-
-[Service]
-User=soporte
-Group=www-data
-WorkingDirectory=/home/soporte/inventario
-ExecStart=/home/soporte/inventario/venv/bin/gunicorn --workers 3 --bind unix:/home/soporte/inventario/inventario.sock inventario_pda.wsgi:application
-
-[Install]
-WantedBy=multi-user.target
-```
-Habilitar: `sudo systemctl enable --now inventario`
+Gunicorn es el servidor que realmente ejecuta el código Python. Lo configuramos como servicio para que:
+1. Arranque solo al encender la VM.
+2. Se reinicie automáticamente si falla.
+3. No dependa de una terminal abierta.
 
 ### Nginx (Proxy Inverso)
-Crea el archivo `/etc/nginx/sites-available/inventario`:
-```nginx
-server {
-    listen 80;
-    server_name _; # Acepta cualquier IP
+Nginx actúa como "la cara" del servidor. Recibe las peticiones en el puerto 80 y las pasa a Gunicorn.
+- **¿Por qué Nginx?**: Porque maneja archivos estáticos (CSS, Imágenes) de forma mucho más eficiente que un servidor Python y añade una capa de seguridad.
 
-    location = /favicon.ico { access_log off; log_not_found off; }
-    location /static/ { root /home/soporte/inventario; }
-    location / {
-        include proxy_params;
-        proxy_pass http://unix:/home/soporte/inventario/inventario.sock;
-    }
-}
-```
-Activar:
-```bash
-sudo ln -sf /etc/nginx/sites-available/inventario /etc/nginx/sites-enabled/
-sudo rm /etc/nginx/sites-enabled/default
-sudo chmod 755 /home/soporte
-sudo systemctl restart nginx
-```
+> [!IMPORTANT]
+> **Permisos de carpeta**: Ejecutamos `sudo chmod 755 /home/soporte`. Sin esto, Nginx no podrá leer el archivo `.sock` dentro de tu carpeta de usuario y dará error 502.
 
 ---
 
 ## 6. Acceso desde la Red
 Si usas **VirtualBox**:
 1. Cambia la Red a **Adaptador Puente** (Bridged Adapter).
-2. Obtén la IP corporativa: `ip addr`.
-3. Accede desde cualquier dispositivo usando el navegador: `http://<IP_DE_LA_VM>`.
+2. Esto hace que la VM sea un dispositivo más en tu WiFi/Cable, tal como si fuera otro laptop físico.
+
+**Acceso final:** `http://<IP_DE_LA_VM>` (Ejemplo: `http://192.168.155.200`)
