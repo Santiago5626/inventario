@@ -85,20 +85,78 @@ inventario_pda/
 
 ---
 
-## Despliegue (Render)
+## Despliegue en Producción (Linux VM)
 
-El proyecto está configurado para despliegue automático en Render mediante `render.yaml`.
+El proyecto está preparado para desplegarse de manera robusta usando Nginx, Gunicorn y Systemd en distribuciones basadas en Ubuntu/Debian.
 
-**Comando de Build:**
+### 1. Instalación de Base
+Ejecuta el script de instalación para preparar los paquetes nativos de Ubuntu:
 ```bash
-pip install -r requirements.txt
+chmod +x setup_linux.sh
+./setup_linux.sh
 ```
 
-**Comando de Inicio:**
+### 2. Configuración de Entorno
+Clona la plantilla `.env.example` y define tus variables:
 ```bash
-gunicorn inventario_pda.wsgi:application --bind 0.0.0.0:$PORT
+cp .env.example .env
+nano .env
 ```
 
+**Guía de Variables en el `.env`:**
+- **`DEBUG`**: En producción siempre debe ser `False`.
+- **`SECRET_KEY`**: Genera una clave nueva y única desde la consola de Linux usando:
+  `python3 -c "import secrets; print(secrets.token_urlsafe(50))"`
+- **`ALLOWED_HOSTS`**: Separa por comas la dirección IP del servidor y/o el dominio comprado (ej: `127.0.0.1,200.5.4.3,miservicio.com`).
+- **`DATABASE_URL`**: Contiene la contraseña del usuario de base de datos de PostgreSQL creado en el siguiente paso. Formato: `postgresql://USUARIO:CONTRASEÑA@127.0.0.1:5432/inventario_db`
+- **`CSRF_TRUSTED_ORIGINS`**: Los mismos que pusiste en host, pero con `http://` o `https://` al inicio (ej: `http://200.5.4.3,https://miservicio.com`).
+
+### 3. Ejecución como Servicio con Systemd
+Crea el servicio para Gunicorn en `/etc/systemd/system/inventario.service`:
+```ini
+[Unit]
+Description=Gunicorn daemon for Inventario
+After=network.target
+
+[Service]
+User=tu_usuario_linux
+Group=www-data
+WorkingDirectory=/ruta/a/tu/inventario
+ExecStart=/ruta/a/tu/inventario/venv/bin/gunicorn --workers 3 --bind unix:/ruta/a/tu/inventario/inventario.sock inventario_pda.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Inicia Gunicorn de forma constante:
+```bash
+sudo systemctl enable --now inventario
+```
+
+### 4. Configuración del Proxy Inverso con Nginx
+Crea un bloque en `/etc/nginx/sites-available/inventario`:
+```nginx
+server {
+    listen 80;
+    server_name tu_dominio_o_ip;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location /static/ {
+        root /ruta/a/tu/inventario;
+    }
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/ruta/a/tu/inventario/inventario.sock;
+    }
+}
+```
+
+Habilita el sitio y reinicia Nginx:
+```bash
+sudo ln -s /etc/nginx/sites-available/inventario /etc/nginx/sites-enabled
+sudo systemctl restart nginx
+```
 ---
 
 ## Tecnologías
