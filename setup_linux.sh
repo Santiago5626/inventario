@@ -10,7 +10,7 @@ echo "=========================================================="
 
 # 1. Actualizar repositorios e instalar paquetes base del sistema
 sudo apt update
-sudo apt install -y python3-venv python3-dev libpq-dev postgresql postgresql-contrib nginx curl
+sudo apt install -y build-essential python3-venv python3-dev libpq-dev postgresql postgresql-contrib nginx curl
 
 echo "=========================================================="
 echo "Configurando Entorno Virtual Python..."
