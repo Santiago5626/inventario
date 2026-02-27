@@ -148,3 +148,23 @@ Si usas **VirtualBox**:
 2. Esto hace que la VM sea un dispositivo más en tu WiFi/Cable, tal como si fuera otro laptop físico.
 
 **Acceso final:** `http://<IP_DE_LA_VM>` (Ejemplo: `http://192.168.155.200`)
+
+---
+
+## 7. Exportación y Portabilidad (Migración)
+Si deseas llevar esta máquina virtual con **todas sus configuraciones** (Gunicorn, Nginx, PostgreSQL, Backups) a otra computadora:
+
+### En la máquina de origen (VirtualBox):
+1.  Apaga la VM completamente.
+2.  Ve a **Archivo > Exportar servicio virtualizado** (Export Appliance).
+3.  Selecciona la VM "Debian" y elige el formato **OVA**.
+4.  Guarda el archivo `.ova` en un pendrive o disco externo.
+
+### En la máquina de destino:
+1.  Abre VirtualBox y ve a **Archivo > Importar servicio virtualizado**.
+2.  Selecciona el archivo `.ova`.
+3.  **IMPORTANTE**: En la configuración de importación, selecciona **"Reiniciar la dirección MAC de todas las tarjetas de red"**.
+4.  Una vez importada, verifica en la pestaña **Red** que el Adaptador siga en modo **Adaptador Puente**.
+
+> [!NOTE]
+> Al cambiar de computadora/red, la IP de la VM podría cambiar si el router es diferente. Asegúrate de actualizar el archivo `.env` y la IP estática en `/etc/network/interfaces` si es necesario para que coincida con el rango de la nueva red.
