@@ -71,32 +71,47 @@ Se requiere una instalación limpia de Debian con acceso root.
 
 ## 3. Base de Datos (PostgreSQL)
 
-1. **Creación de usuario y DB**:
+1. **Creación de usuario, DB y permisos**:
    ```bash
    sudo -u postgres psql
    ```
-   Dentro de psql:
+   Dentro de psql, ejecuta cada línea **por separado**:
    ```sql
    CREATE DATABASE inventario_db;
    CREATE USER admin WITH PASSWORD 'admin';
    GRANT ALL PRIVILEGES ON DATABASE inventario_db TO admin;
+   ALTER DATABASE inventario_db OWNER TO admin;
+   GRANT ALL ON SCHEMA public TO admin;
    \q
    ```
    > [!WARNING]
    > Aunque usamos 'admin/admin' para pruebas, en un servidor expuesto a internet se deben usar contraseñas robustas.
 
+   > [!IMPORTANT]
+   > **PostgreSQL 15+**: A partir de esta versión, los permisos sobre el esquema `public` no se otorgan automáticamente. Si se omite el `GRANT ALL ON SCHEMA public TO admin`, Django no podrá crear tablas y el comando `migrate` fallará con `permission denied for schema public`.
+
 ---
 
 ## 4. Configuración de Django (.env)
 
-1. **Variables críticas**:
-   - `DEBUG=True`: Útil durante el despliegue para ver errores, pero debe ser `False` en producción real.
-   - `ALLOWED_HOSTS=*`: Permite que cualquier IP acceda al sistema. Es necesario cuando la IP del servidor es asignada por DHCP y puede cambiar.
+1. **Variables del archivo `.env`**:
+   El archivo `.env` debe estar dentro de `/home/soporte/inventario/`. Las variables obligatorias son:
+   ```text
+   DEBUG=False
+   SECRET_KEY=<clave_secreta_larga>
+   ALLOWED_HOSTS=192.168.155.200,localhost,127.0.0.1
+   DATABASE_URL=postgresql://admin:admin@localhost:5432/inventario_db
+   CSRF_TRUSTED_ORIGINS=http://192.168.155.200
+   ```
+   > [!IMPORTANT]
+   > El proyecto usa `python-dotenv` para cargar este archivo automáticamente. Si no, Django usa SQLite por defecto aunque `DATABASE_URL` esté configurado.
+
+   > [!WARNING]
+   > `CSRF_TRUSTED_ORIGINS` no acepta el comodín `*` en Django 4.0+. Siempre debe incluir el esquema (`http://` o `https://`).
 
 2. **Inicialización**:
    ```bash
    source venv/bin/activate
-   python manage.py makemigrations activos
    python manage.py migrate
    python manage.py collectstatic --noinput
    ```
@@ -110,6 +125,13 @@ Gunicorn es el servidor que realmente ejecuta el código Python. Lo configuramos
 1. Arranque solo al encender la VM.
 2. Se reinicie automáticamente si falla.
 3. No dependa de una terminal abierta.
+
+> [!IMPORTANT]
+> El servicio systemd para este proyecto se llama **`inventario.service`**, no `gunicorn.service`. Usa siempre:
+> ```bash
+> sudo systemctl restart inventario.service
+> sudo systemctl status inventario.service
+> ```
 
 ### Nginx (Proxy Inverso)
 Nginx actúa como "la cara" del servidor. Recibe las peticiones en el puerto 80 y las pasa a Gunicorn.
