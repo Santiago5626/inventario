@@ -166,5 +166,11 @@ Si deseas llevar esta máquina virtual con **todas sus configuraciones** (Gunico
 3.  **IMPORTANTE**: En la configuración de importación, selecciona **"Reiniciar la dirección MAC de todas las tarjetas de red"**.
 4.  Una vez importada, verifica en la pestaña **Red** que el Adaptador siga en modo **Adaptador Puente**.
 
+### Migración a Hyper-V (Consideraciones Especiales)
+Si conviertes el disco a `.vhd` para usarlo en Hyper-V:
+1.  **Conmutador Virtual**: En la configuración de la VM en Hyper-V, asegúrate de conectar el Adaptador de Red a un conmutador de tipo **Externo**.
+2.  **Interfaz eth0**: Hyper-V suele renombrar la tarjeta a `eth0`. Debes editar `/etc/network/interfaces` y reemplazar `enp0s3` por `eth0`.
+3.  **NO-CARRIER**: Si ves este error en `ip addr`, revisa que el cable virtual esté "conectado" en la configuración de Hyper-V.
+
 > [!NOTE]
 > Al cambiar de computadora/red, la IP de la VM podría cambiar si el router es diferente. Asegúrate de actualizar el archivo `.env` y la IP estática en `/etc/network/interfaces` si es necesario para que coincida con el rango de la nueva red.
