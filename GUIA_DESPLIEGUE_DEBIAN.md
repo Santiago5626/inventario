@@ -15,14 +15,31 @@ Se requiere una instalación limpia de Debian con acceso root.
    > [!NOTE]
    > Mantener el sistema actualizado previene fallos de seguridad y asegura que las librerías de Python se compilen correctamente.
 
-2. **Herramientas de red (El reto del DHCP)**:
-   Si al cambiar a "Adaptador Puente" la máquina no recibe IP, es porque Debian no incluye el cliente DHCP por defecto en instalaciones mínimas.
-   ```bash
-   apt install isc-dhcp-client -y
-   dhclient enp0s3
-   ```
-   > [!IMPORTANT]
-   > Sin una IP en el rango de tu red local (192.168.x.x), el servidor no podrá ser visto por otros dispositivos (celulares, tablets o PCs).
+2. **Herramientas de red y configuración de IP**:
+    Si la máquina no recibe IP (DHCP desactivado o fallo de `dhclient`), se debe configurar una IP estática.
+    
+    *Configuración temporal (para pruebas rápidas):*
+    ```bash
+    ip addr add 192.168.155.200/24 dev enp0s3
+    ip link set enp0s3 up
+    ip route add default via 192.168.155.1
+    ```
+
+    *Configuración permanente (editar /etc/network/interfaces):*
+    ```bash
+    nano /etc/network/interfaces
+    ```
+    Configuración recomendada para la interfaz (ej. `enp0s3`):
+    ```text
+    auto enp0s3
+    iface enp0s3 inet static
+        address 192.168.155.200
+        netmask 255.255.255.0
+        gateway 192.168.155.1
+        dns-nameservers 8.8.8.8 8.8.4.4
+    ```
+    > [!IMPORTANT]
+    > Sin una IP fija o correctamente asignada por DHCP, el servidor no será accesible. Si tu red local no tiene DHCP activo (como en este caso), la configuración estática es obligatoria.
 
 ---
 
