@@ -17,7 +17,15 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'  # True por defecto para desar
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
 csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
-CSRF_TRUSTED_ORIGINS = csrf_origins.split(',') if csrf_origins else []
+if csrf_origins:
+    # Django 4.0+ requiere que empiecen con http:// o https:// y no permite '*'
+    CSRF_TRUSTED_ORIGINS = [
+        origin if origin.startswith(('http://', 'https://')) else f'http://{origin}'
+        for origin in csrf_origins.split(',')
+        if origin and origin != '*'
+    ]
+else:
+    CSRF_TRUSTED_ORIGINS = []
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
